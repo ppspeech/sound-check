@@ -16,6 +16,10 @@ Open `index.html`. The app saves client data through claude.ai artifact storage,
 
 No client data is stored in this repository.
 
+## Icon
+
+The tongue mascot icon is in `icons/` (`icon-1024.png` for the App Store size, `apple-touch-icon.png` for the iPad home screen, and `icon.svg` and `favicon-32.png` for the browser tab).
+
 ## Credits
 
 - Quick Screener Pictures © 2007 Caroline Bowen, [speech-language-therapy.com](https://www.speech-language-therapy.com). Used with the Quick Screener word list and scoring sheet.
