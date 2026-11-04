@@ -16,6 +16,12 @@ Open `index.html`. The app saves client data through claude.ai artifact storage,
 
 No client data is stored in this repository.
 
+## Family practice page
+
+`family/` is a simple practice page for families: pick a sound and word position, flashcards with stamps, a grown-up tip (cues adapted from Bowen 2015, Table 6.5), and the speech games. Practice saves on the family's own device only. **Send to my speechie** shares a summary (days practised, ratings, tricky words) by text or email.
+
+To send a family a ready-made link, open the page, tap **For speech pathologists**, pick the sound and position, and copy the link (e.g. `family/#k-i`).
+
 ## Icon
 
 The tongue mascot icon is in `icons/` (`icon-1024.png` for the App Store size, `apple-touch-icon.png` for the iPad home screen, and `icon.svg` and `favicon-32.png` for the browser tab).
