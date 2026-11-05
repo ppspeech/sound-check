@@ -43,8 +43,8 @@ function snd(kind){
 
 /* ---------- Game engine: every try earns the child a turn ---------- */
 const GAMES=[
-  {id:"board", name:"Dino Dash", art:"🦖", bg:"linear-gradient(135deg,#b7e4a2,#5fb86a)", col:"#2f7d3a", how:"Roll the dice and race to the nest.", tag:"New"},
-  {id:"spin", name:"Spin & Win", art:"🎡", bg:"linear-gradient(135deg,#ffd36b,#ff8a6b)", col:"#e2553f", how:"Every try earns a spin. Got it = double points.", tag:"Most popular"},
+  {id:"board", name:"Dino Dash", art:"🦖", bg:"linear-gradient(135deg,#b7e4a2,#5fb86a)", col:"#2f7d3a", how:"Roll the dice and race to the nest."},
+  {id:"spin", name:"Spin & Win", art:"🎡", bg:"linear-gradient(135deg,#ffd36b,#ff8a6b)", col:"#e2553f", how:"Every try earns a spin. Got it = double points."},
   {id:"memory", name:"Memory Match", art:"🃏", bg:"repeating-linear-gradient(45deg,#7b5cff 0 14px,#8f74ff 14px 28px)", col:"#6a47e8", how:"Flip two cards per try. Find the pairs."},
   {id:"munch", name:"Feed Munch", art:"👾", bg:"linear-gradient(135deg,#b9f0c9,#5fcf8c)", col:"#239a55", how:"Feed the monster. Big burp at 10!"},
   {id:"road", name:"Road Trip", art:"🚗", bg:"radial-gradient(circle at 30% 30%,#4a5ad0,#1b2a5a)", col:"#3b47b8", how:"Every try moves along. 10 tries = 1 road."}
@@ -163,7 +163,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 GAMES.push(
   {id:"balloon", name:"Balloon Pop", art:"🎈", bg:"linear-gradient(135deg,#ffc0d9,#ff7aa8)", col:"#d9367a", how:"Pop a balloon each turn. Prizes hide inside."},
   {id:"dig", name:"Treasure Dig", art:"🏴‍☠️", bg:"linear-gradient(180deg,#ffe9b0,#e7c27a)", col:"#8a5a12", how:"Dig one square per turn. Find the chest!"},
-  {id:"burger", name:"Burger Stack", art:"🍔", bg:"linear-gradient(135deg,#ffe3a8,#ffb04d)", col:"#d9670c", how:"Add a layer each turn. Silly toppings on star turns.", tag:"New"},
+  {id:"burger", name:"Burger Stack", art:"🍔", bg:"linear-gradient(135deg,#ffe3a8,#ffb04d)", col:"#d9670c", how:"Add a layer each turn. Silly toppings on star turns."},
   {id:"tank", name:"Fish Tank", art:"🐠", bg:"linear-gradient(180deg,#9fe3ff,#2f9fd6)", col:"#1f7fb8", how:"Catch a sea creature each turn. The tank is kept."}
 );
 /* Balloon Pop */
@@ -263,7 +263,7 @@ function gameArea(G,th){
 }
 /* ---------- Games, set 3: Smoothie Maker, Star Sprint, Parrot Barrel, Bonk the Mole, Tic Tac Toe, Paint Splash ---------- */
 GAMES.push(
-  {id:"smoothie", name:"Smoothie Maker", art:"🥤", bg:"linear-gradient(135deg,#ffd9c7,#ffb199)", col:"#d9573a", how:"Add a fruit each turn. Follow the recipe or make your own.", tag:"New"},
+  {id:"smoothie", name:"Smoothie Maker", art:"🥤", bg:"linear-gradient(135deg,#ffd9c7,#ffb199)", col:"#d9573a", how:"Add a fruit each turn. Follow the recipe or make your own."},
   {id:"stars", name:"Star Sprint", art:"🚀", bg:"radial-gradient(circle at 30% 30%,#3b4a7a,#141b33)", col:"#3b47b8", how:"Zoom the rocket to catch a star. 10 stars to win."},
   {id:"barrel", name:"Parrot Barrel", art:"🦜", bg:"linear-gradient(135deg,#d9b48a,#9c6b3f)", col:"#8a5a12", how:"Push a sword into the barrel. Who will make the parrot jump?"},
   {id:"mole", name:"Bonk the Mole", art:"🐹", bg:"linear-gradient(135deg,#c9e7a8,#8cc06b)", col:"#4f7d2f", how:"Bonk the mole when it pops up."},
