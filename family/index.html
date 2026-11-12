@@ -76,6 +76,16 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.hop{animation:none}}
 .hwban{display:flex;gap:14px;align-items:center;background:#E6EFE8;color:#2F5540;border-radius:22px;padding:14px 18px;margin:0 0 14px}.hwban span{font-size:2rem}.hwban b{display:block;font-size:1.15rem}.hwban small{opacity:.8}
 .vs{color:#9A9087;font-weight:700;font-size:1.05rem;margin-top:-4px}
+.chart{background:#FFF8E8;border-radius:24px;padding:14px 18px;margin:0 0 14px}.chd{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}.chd b{font-size:1.15rem}.chd span{font-weight:700;color:#8A6A2E}
+.stks{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:10px 0 6px}.stk{text-align:center}.stk i{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;border:2.5px dashed #E6D7B4;font-style:normal;font-size:clamp(1.3rem,5vw,2.4rem);background:#fff}
+.stk.on i{border:0;background:#FFE9A8;animation:stk .5s cubic-bezier(.3,1.6,.6,1)}.stk.today i{border-color:#C9962E}.stk.tro i{filter:grayscale(1);opacity:.45}.stk.tro.on i{filter:none;opacity:1;background:#FFD766}
+.stk small{font-weight:700;color:#8A8076;font-size:.8rem}.chart p{margin:4px 0 0;font-weight:700}
+@keyframes stk{from{transform:scale(.3) rotate(-30deg)}to{transform:none}}
+.play{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 0 16px}.bigplay{width:100%;border:0;border-radius:28px;background:#3F6B52;color:#fff;font:inherit;font-weight:800;font-size:1.7rem;padding:26px 20px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;box-shadow:0 6px 0 #2B4C39}
+.bigplay:active{transform:translateY(4px);box-shadow:0 2px 0 #2B4C39}.bigplay i{font-style:normal;font-size:2.4rem}
+.cele{position:fixed;inset:0;z-index:99999;background:rgba(40,32,24,.5);display:grid;place-items:center}.cele div{background:#fff;border-radius:32px;padding:28px 40px;text-align:center;animation:stk .5s cubic-bezier(.3,1.6,.6,1)}
+.cele i{display:block;font-style:normal;font-size:6rem;line-height:1.1}.cele b{display:block;font-size:1.8rem}.cele span{color:#6E645B;font-weight:700}
+@media (prefers-reduced-motion:reduce){.stk.on i,.cele div{animation:none}}
 </style>
 </head>
 <body>
@@ -94,7 +104,7 @@ try{Object.assign(ST,JSON.parse(localStorage.getItem('sc-family')||'{}'))}catch(
 function save(){try{localStorage.setItem('sc-family',JSON.stringify(ST))}catch(e){}}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 /* ---------- view state ---------- */
-const V={k:null,p:'i',deck:[],i:0,res:[],fin:false,pop:-1,share:false,vs:{}};
+const V={k:null,p:'i',deck:[],i:0,res:[],fin:false,pop:-1,share:false,vs:{},fc:false,cele:null};
 const HW='_hw';
 function readHW(raw){try{const b=raw.replace(/-/g,'+').replace(/_/g,'/');const o=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))));
   if(!o||!Array.isArray(o.w)||!o.w.length)return false;const t=String(o.t||'Homework').slice(0,60);const ws=[];V.vs={};
@@ -119,16 +129,18 @@ function render(){
   const tip=D.tips[V.k];
   const ipa=(D.sounds.find(s=>s[0]===V.k)||[])[1];
   let h=`<div class="top">${ICON}<h1>Sound Check<small>practice at home${ST.name?' · '+esc(ST.name):''}</small></h1>
-   <div class="sp"><span class="star">⭐ ${weekStamps()} this week</span>${V.k?`<button class="btn" data-a="games">🎮 Games</button>`:''}<button class="btn ink" data-a="share">📤 Send to my speechie</button></div></div>`;
+   <div class="sp"><span class="star">⭐ ${weekStamps()} this week</span>${V.k&&V.k!==HW?`<button class="btn" data-a="games">🎮 Games</button>`:''}<button class="btn ink" data-a="share">📤 Send to my speechie</button></div></div>`;
   if(V.k===HW)h+=`<div class="hwban"><span>🏠</span><div><b>${ST.name?esc(ST.name)+'’s homework':'This week’s homework'}</b><small>${esc(V.p)} · ${(D.words[HW][V.p]||[]).length} words from your speech pathologist</small></div></div>`;
   else h+=`<div class="pick"><div class="chips" role="group" aria-label="Sound">${D.sounds.map(([k,ip])=>`<button data-a="snd" data-k="${k}" aria-pressed="${k===V.k}">${esc(fl(k))}</button>`).join('')}</div>`;
   if(V.k&&V.k!==HW){const ok=okPos(V.k);if(!isCl(V.k))h+=`<div class="chips" role="group" aria-label="Where in the word">${['i','m','f'].map(p=>`<button data-a="pos" data-p="${p}" aria-pressed="${p===V.p}" ${ok.includes(p)?'':'disabled'}>${POS[p]}</button>`).join('')}</div>`}
   if(V.k!==HW)h+=`</div>`;
   if(!V.k){h+=`<div class="card" style="padding:40px 20px"><div class="pic">👆</div><p style="font-size:1.15rem;margin:8px 0 0">Pick the sound your speech pathologist is working on.</p></div>`}
   else{
-    h+=`<div class="main">`;
+    const hw=V.k===HW;
+    if(hw)h+=chartHTML()+`<div class="play"><button class="bigplay" data-a="games"><i>🎮</i>Play the games</button><button class="btn" data-a="fcT">${V.fc?'Hide flashcards':'🃏 Flashcards instead'}</button></div>`;
+    h+=`<div class="main ${hw&&!V.fc?'nofc':''}">`;
     if(tip)h+=`<div class="tip"><h2>Grown-up tip</h2><p>This is the <b>${esc(tip.nm.toLowerCase())}</b>. Try saying: <b>“${esc(tip.say)}”</b></p><p>${esc(tip.show)}</p>${tip.br&&tip.br.length?`<p>Warm-up phrases that make it easier:</p><div class="try">${tip.br.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}<p class="src" style="margin-top:8px">Cues adapted from Bowen (2015), Table 6.5.</p></div>`;
-    h+=`<div class="card ${ST.hide?'hidew':''}">`;
+    if(!hw||V.fc){h+=`<div class="card ${ST.hide?'hidew':''}">`;
     if(V.fin){const cnt=k=>V.res.filter(x=>x===k).length;
       h+=`<div class="fin"><div class="pic" style="font-size:90px">🏆</div><h2>${V.res.length} words done!</h2><div class="wall">${V.res.map(r=>`<i style="background:var(--${r==='b'?'blue':r==='y'?'yellow':'red'})"></i>`).join('')}</div>
         <p>${cnt('b')} super clear · ${cnt('y')} quite clear · ${cnt('r')} try again</p><button class="btn ink" data-a="again">Practise again</button></div>`}
@@ -137,8 +149,10 @@ function render(){
        <div class="pic ${V.pop===V.i-1?'hop':''}">${esc(D.pics[w]||'')}</div><div class="word">${esc(w)}</div>${V.k===HW&&V.vs[w]?`<div class="vs">not “${esc(V.vs[w])}”</div>`:''}
        <div class="stamps">${V.deck.map((_,j)=>`<i class="${V.res[j]||''} ${j===V.i?'now':''}"></i>`).join('')}</div>
        <div class="rate"><button class="r" data-a="rate" data-v="r"><i></i>Let’s try again</button><button class="y" data-a="rate" data-v="y"><i></i>Quite clear</button><button class="b" data-a="rate" data-v="b"><i></i>Super clear</button></div>`}
-    h+=`</div></div>`;
+    h+=`</div>`}
+    h+=`</div>`;
   }
+  if(V.cele){h+=`<div class="cele" data-a="celeX"><div><i>${V.cele}</i><b>New sticker!</b><span>Great practising today${ST.name?', '+esc(ST.name):''}!</span></div></div>`;const cz=V.cele;setTimeout(()=>{if(V.cele===cz){V.cele=null;render()}},2800)}
   h+=`<div class="foot"><span>Practice stays on this device until you send it.</span><div class="row"><button class="btn" data-a="setup">${V.share?'Close':'⚙︎ For speech pathologists'}</button></div></div>`;
   if(V.share){h+=`<div class="panel"><h3>Set up a link for a family</h3>
     <label for="nm">Child's first name or initials (optional)</label><input id="nm" maxlength="20" value="${esc(ST.name)}" placeholder="e.g. Sam or S.T.">
@@ -168,28 +182,44 @@ async function share(){
   if(navigator.share){try{await navigator.share({title:'Home practice',text:t});return}catch(e){if(e&&e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(t);toast('Copied. Paste it into a text or email to your speechie.')}catch(e){location.href='mailto:?subject='+encodeURIComponent('Home practice')+'&body='+encodeURIComponent(t)}
 }
+
+/* ---------- sticker chart (homework links) ---------- */
+const STK=['🦄','🐨','🦘','🐬','🦖','🚀','🌈','🐙','🦋','🍦','🐢','🦜','🐳','🍉'];
+const dkey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function daysDone(){return new Set([...(ST.days||[]),...ST.log.map(x=>x.d)])}
+function stickerFor(d){let n=0;for(const c of d)n=(n*31+c.charCodeAt(0))%9973;return STK[n%STK.length]}
+function markDay(){const t=today();const had=daysDone().has(t);ST.days=[...new Set([...(ST.days||[]),t])].slice(-400);save();if(!had)V.cele=stickerFor(t)}
+function streak(){const s=daysDone();let n=0;const d=new Date();if(!s.has(dkey(d)))d.setDate(d.getDate()-1);while(s.has(dkey(d))){n++;d.setDate(d.getDate()-1)}return n}
+function chartHTML(){const s=daysDone(),ws=weekStart(),t=today();let n=0;const cells=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((lab,i)=>{const d=new Date(ws);d.setDate(d.getDate()+i);const k=dkey(d),on=s.has(k);if(on)n++;
+    return `<div class="stk ${on?'on':''} ${k===t?'today':''}"><i>${on?stickerFor(k):k===t?'❓':''}</i><small>${lab}</small></div>`}).join('');
+  const goal=5,st=streak();const msg=n>=goal?'🏆 Trophy week! You practised '+n+' days.':n===0?'Play today to win your first sticker!':(goal-n)+' more day'+(goal-n===1?'':'s')+' to win the trophy 🏆';
+  return `<div class="chart"><div class="chd"><b>${ST.name?esc(ST.name)+'’s sticker chart':'Sticker chart'}</b><span>${st>1?'🔥 '+st+' days in a row · ':''}⭐ ${weekStamps()} star${weekStamps()===1?"":"s"}</span></div><div class="stks">${cells}<div class="stk tro ${n>=goal?'on':''}"><i>🏆</i><small>${Math.min(n,goal)}/${goal}</small></div></div><p>${msg}</p></div>`}
+function openGames(){if(!window.SpeechGames){toast('Games are still loading.');return}
+    const ws=(D.words[V.k]||{})[V.p]||[];const ip=(D.sounds.find(s=>s[0]===V.k)||[])[1];
+    SpeechGames.open({items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:V.k===HW?V.p:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
+      onSave:st=>{ST.games=st;save()},
+      onFinish:res=>{markDay();(res||[]).forEach(r=>ST.log.push({d:today(),k:V.k,p:V.p,w:r.key,r:r.k==='clear'?'b':r.k==='near'?'y':'r'}));save();render()}})}
 /* ---------- events ---------- */
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b||b.closest('.sgk'))return;const a=b.dataset.a;
   if(a==='snd')pick(b.dataset.k,V.p);
   if(a==='pos'){V.p=b.dataset.p;newDeck();setHash();render()}
-  if(a==='rate'){const w=V.deck[V.i];const v=b.dataset.v;V.res[V.i]=v;ST.log.push({d:today(),k:V.k,p:V.p,w,r:v});if(ST.log.length>3000)ST.log=ST.log.slice(-3000);save();V.pop=V.i;V.i++;if(V.i>=V.deck.length)V.fin=true;render()}
+  if(a==='rate'){markDay();const w=V.deck[V.i];const v=b.dataset.v;V.res[V.i]=v;ST.log.push({d:today(),k:V.k,p:V.p,w,r:v});if(ST.log.length>3000)ST.log=ST.log.slice(-3000);save();V.pop=V.i;V.i++;if(V.i>=V.deck.length)V.fin=true;render()}
   if(a==='again'){newDeck();render()}
   if(a==='hide'){ST.hide=!ST.hide;save();render()}
   if(a==='share')share();
+  if(a==='celeX'){V.cele=null;render()}
   if(a==='setup'){V.share=!V.share;render()}
   if(a==='copy'){const n=(document.getElementById('nm')?.value||'').trim().slice(0,20);ST.name=n;save();
     const url=location.origin+location.pathname+'#'+V.k+'-'+V.p+(n?'&n='+encodeURIComponent(n):'');
     try{await navigator.clipboard.writeText(url);toast('Link copied')}catch(e){prompt('Copy this link:',url)}render()}
-  if(a==='games'){if(!window.SpeechGames){toast('Games are still loading.');return}
-    const ws=(D.words[V.k]||{})[V.p]||[];const ip=(D.sounds.find(s=>s[0]===V.k)||[])[1];
-    SpeechGames.open({items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:V.k===HW?V.p:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
-      onSave:st=>{ST.games=st;save()},
-      onFinish:res=>{(res||[]).forEach(r=>ST.log.push({d:today(),k:V.k,p:V.p,w:r.key,r:r.k==='clear'?'b':r.k==='near'?'y':'r'}));save();render()}})}
+  if(a==='games')openGames();
+  if(a==='fcT'){V.fc=!V.fc;render()}
 });
 document.addEventListener('keydown',e=>{if(document.querySelector('.sgk')||!V.k||V.fin||e.target.tagName==='INPUT')return;const m={ArrowRight:'b',ArrowDown:'y',ArrowLeft:'r'}[e.key];if(m)document.querySelector(`.rate [data-v="${m}"]`)?.click()});
 window.addEventListener('hashchange',()=>{readHash();if(V.k){const ok=okPos(V.k);if(!ok.includes(V.p))V.p=ok[0];newDeck()}render()});
 readHash();if(V.k){const ok=okPos(V.k);if(!ok.includes(V.p))V.p=ok[0];newDeck()}
 render();
+if(V.k===HW){let n=0;const go=()=>{if(window.SpeechGames)openGames();else if(n++<40)setTimeout(go,150)};go()}
 </script>
 </body>
 </html>
