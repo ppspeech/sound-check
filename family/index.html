@@ -74,6 +74,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-weight:700;z-index:99}
 .hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}@keyframes hop{35%{transform:translateY(-14px) scale(1.06)}}
 @media (prefers-reduced-motion:reduce){.hop{animation:none}}
+.hwban{display:flex;gap:14px;align-items:center;background:#E6EFE8;color:#2F5540;border-radius:22px;padding:14px 18px;margin:0 0 14px}.hwban span{font-size:2rem}.hwban b{display:block;font-size:1.15rem}.hwban small{opacity:.8}
+.vs{color:#9A9087;font-weight:700;font-size:1.05rem;margin-top:-4px}
 </style>
 </head>
 <body>
@@ -92,14 +94,21 @@ try{Object.assign(ST,JSON.parse(localStorage.getItem('sc-family')||'{}'))}catch(
 function save(){try{localStorage.setItem('sc-family',JSON.stringify(ST))}catch(e){}}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 /* ---------- view state ---------- */
-const V={k:null,p:'i',deck:[],i:0,res:[],fin:false,pop:-1,share:false};
-function readHash(){const h=decodeURIComponent(location.hash.slice(1));const m=h.match(/^([a-z]+)(?:-([imf]))?(?:&n=(.*))?$/);
+const V={k:null,p:'i',deck:[],i:0,res:[],fin:false,pop:-1,share:false,vs:{}};
+const HW='_hw';
+function readHW(raw){try{const b=raw.replace(/-/g,'+').replace(/_/g,'/');const o=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))));
+  if(!o||!Array.isArray(o.w)||!o.w.length)return false;const t=String(o.t||'Homework').slice(0,60);const ws=[];V.vs={};
+  o.w.slice(0,40).forEach(x=>{const w=String(x[0]||'').slice(0,40);if(!w)return;ws.push(w);if(x[1])D.pics[w]=String(x[1]).slice(0,16);if(x[2])V.vs[w]=String(x[2]).slice(0,40)});
+  if(!ws.length)return false;D.words[HW]={[t]:ws};if(o.k&&D.tips[o.k])D.tips[HW]=D.tips[o.k];else delete D.tips[HW];
+  V.k=HW;V.p=t;if(o.n){ST.name=String(o.n).slice(0,20);save()}return true}catch(e){return false}}
+function readHash(){if(location.hash.startsWith('#h=')){if(readHW(location.hash.slice(3)))return}
+  const h=decodeURIComponent(location.hash.slice(1));const m=h.match(/^([a-z]+)(?:-([imf]))?(?:&n=(.*))?$/);
   if(m&&D.words[m[1]]){V.k=m[1];V.p=m[2]||'i';if(m[3]&&!ST.name){ST.name=m[3].slice(0,20);save()}}}
-function setHash(){history.replaceState(null,'','#'+V.k+(isCl(V.k)?'':'-'+V.p))}
-function okPos(k){const o=D.words[k]||{};return ['i','m','f'].filter(p=>(o[p]||[]).length>=4)}
+function setHash(){if(V.k===HW)return;history.replaceState(null,'','#'+V.k+(isCl(V.k)?'':'-'+V.p))}
+function okPos(k){const o=D.words[k]||{};if(k===HW)return Object.keys(o);return ['i','m','f'].filter(p=>(o[p]||[]).length>=4)}
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function newDeck(){const ws=(D.words[V.k]||{})[V.p]||[];V.deck=shuffle(ws).slice(0,10);V.i=0;V.res=[];V.fin=false;V.pop=-1}
-function pick(k,p){V.k=k;const ok=okPos(k);V.p=ok.includes(p)?p:ok[0];newDeck();setHash();render()}
+function pick(k,p){if(k!==HW&&location.hash.startsWith('#h='))history.replaceState(null,'','#');V.k=k;const ok=okPos(k);V.p=ok.includes(p)?p:ok[0];newDeck();setHash();render()}
 /* ---------- stars ---------- */
 function weekStart(){const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));d.setHours(0,0,0,0);return d}
 function weekStamps(){const ws=weekStart();return ST.log.filter(x=>new Date(x.d+'T12:00')>=ws&&x.r!=='r').length}
@@ -111,9 +120,10 @@ function render(){
   const ipa=(D.sounds.find(s=>s[0]===V.k)||[])[1];
   let h=`<div class="top">${ICON}<h1>Sound Check<small>practice at home${ST.name?' · '+esc(ST.name):''}</small></h1>
    <div class="sp"><span class="star">⭐ ${weekStamps()} this week</span>${V.k?`<button class="btn" data-a="games">🎮 Games</button>`:''}<button class="btn ink" data-a="share">📤 Send to my speechie</button></div></div>`;
-  h+=`<div class="pick"><div class="chips" role="group" aria-label="Sound">${D.sounds.map(([k,ip])=>`<button data-a="snd" data-k="${k}" aria-pressed="${k===V.k}">${esc(fl(k))}</button>`).join('')}</div>`;
-  if(V.k){const ok=okPos(V.k);if(!isCl(V.k))h+=`<div class="chips" role="group" aria-label="Where in the word">${['i','m','f'].map(p=>`<button data-a="pos" data-p="${p}" aria-pressed="${p===V.p}" ${ok.includes(p)?'':'disabled'}>${POS[p]}</button>`).join('')}</div>`}
-  h+=`</div>`;
+  if(V.k===HW)h+=`<div class="hwban"><span>🏠</span><div><b>${ST.name?esc(ST.name)+'’s homework':'This week’s homework'}</b><small>${esc(V.p)} · ${(D.words[HW][V.p]||[]).length} words from your speech pathologist</small></div></div>`;
+  else h+=`<div class="pick"><div class="chips" role="group" aria-label="Sound">${D.sounds.map(([k,ip])=>`<button data-a="snd" data-k="${k}" aria-pressed="${k===V.k}">${esc(fl(k))}</button>`).join('')}</div>`;
+  if(V.k&&V.k!==HW){const ok=okPos(V.k);if(!isCl(V.k))h+=`<div class="chips" role="group" aria-label="Where in the word">${['i','m','f'].map(p=>`<button data-a="pos" data-p="${p}" aria-pressed="${p===V.p}" ${ok.includes(p)?'':'disabled'}>${POS[p]}</button>`).join('')}</div>`}
+  if(V.k!==HW)h+=`</div>`;
   if(!V.k){h+=`<div class="card" style="padding:40px 20px"><div class="pic">👆</div><p style="font-size:1.15rem;margin:8px 0 0">Pick the sound your speech pathologist is working on.</p></div>`}
   else{
     h+=`<div class="main">`;
@@ -124,7 +134,7 @@ function render(){
         <p>${cnt('b')} super clear · ${cnt('y')} quite clear · ${cnt('r')} try again</p><button class="btn ink" data-a="again">Practise again</button></div>`}
     else{const w=V.deck[V.i];
       h+=`<span class="n">${V.i+1} of ${V.deck.length}</span><button class="btn hw" data-a="hide">${ST.hide?'Show word':'Hide word'}</button>
-       <div class="pic ${V.pop===V.i-1?'hop':''}">${esc(D.pics[w]||'')}</div><div class="word">${esc(w)}</div>
+       <div class="pic ${V.pop===V.i-1?'hop':''}">${esc(D.pics[w]||'')}</div><div class="word">${esc(w)}</div>${V.k===HW&&V.vs[w]?`<div class="vs">not “${esc(V.vs[w])}”</div>`:''}
        <div class="stamps">${V.deck.map((_,j)=>`<i class="${V.res[j]||''} ${j===V.i?'now':''}"></i>`).join('')}</div>
        <div class="rate"><button class="r" data-a="rate" data-v="r"><i></i>Let’s try again</button><button class="y" data-a="rate" data-v="y"><i></i>Quite clear</button><button class="b" data-a="rate" data-v="b"><i></i>Super clear</button></div>`}
     h+=`</div></div>`;
@@ -133,7 +143,7 @@ function render(){
   if(V.share){h+=`<div class="panel"><h3>Set up a link for a family</h3>
     <label for="nm">Child's first name or initials (optional)</label><input id="nm" maxlength="20" value="${esc(ST.name)}" placeholder="e.g. Sam or S.T.">
     <p class="hint">Pick the sound and word position above, then copy the link. It opens straight onto that practice. Results come back when the family taps “Send to my speechie”.</p>
-    <div style="margin-top:10px"><button class="btn ink" data-a="copy" ${V.k?'':'disabled'}>📋 Copy link for family</button></div></div>`}
+    <div style="margin-top:10px"><button class="btn ink" data-a="copy" ${V.k&&V.k!==HW?'':'disabled'}>📋 Copy link for family</button></div></div>`}
   app.innerHTML=h;
 }
 /* ---------- results summary ---------- */
@@ -149,7 +159,7 @@ function summary(){
     const c=r=>arr.filter(x=>x.r===r).length;
     const tricky={};arr.filter(x=>x.r==='r').forEach(x=>tricky[x.w]=(tricky[x.w]||0)+1);
     const tk=Object.entries(tricky).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([w])=>w);
-    t+=`\n${isCl(k)?fl(k):'"'+fl(k)+'" sound'}${isCl(k)?'':', '+POS[p].toLowerCase()}: ${arr.length} words\n  Super clear ${c('b')} · Quite clear ${c('y')} · Try again ${c('r')}`+(tk.length?`\n  Tricky words: ${tk.join(', ')}`:'')+'\n'});
+    t+=`\n${k===HW?'Homework ('+p+')':(isCl(k)?fl(k):'"'+fl(k)+'" sound')+(isCl(k)?'':', '+POS[p].toLowerCase())}: ${arr.length} words\n  Super clear ${c('b')} · Quite clear ${c('y')} · Try again ${c('r')}`+(tk.length?`\n  Tricky words: ${tk.join(', ')}`:'')+'\n'});
   return t;
 }
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2400)}
@@ -172,7 +182,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
     try{await navigator.clipboard.writeText(url);toast('Link copied')}catch(e){prompt('Copy this link:',url)}render()}
   if(a==='games'){if(!window.SpeechGames){toast('Games are still loading.');return}
     const ws=(D.words[V.k]||{})[V.p]||[];const ip=(D.sounds.find(s=>s[0]===V.k)||[])[1];
-    SpeechGames.open({items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
+    SpeechGames.open({items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:V.k===HW?V.p:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
       onSave:st=>{ST.games=st;save()},
       onFinish:res=>{(res||[]).forEach(r=>ST.log.push({d:today(),k:V.k,p:V.p,w:r.key,r:r.k==='clear'?'b':r.k==='near'?'y':'r'}));save();render()}})}
 });
