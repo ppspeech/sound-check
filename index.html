@@ -5626,9 +5626,9 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 </script>
 <style id="brp-css">
 /* Bridge it play */
-#brp{position:fixed;inset:0;z-index:2147481000;background:rgba(40,32,24,.4);display:flex;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));font-family:"Atkinson Hyperlegible",system-ui,sans-serif;color:#2a2420}
+#brp{position:fixed;inset:0;z-index:2147481000;background:rgba(27,34,43,.4);display:flex;padding:max(12px,env(safe-area-inset-top)) 12px max(24px,calc(env(safe-area-inset-bottom) + 16px));font-family:"Atkinson Hyperlegible",system-ui,sans-serif;color:#2a2420}
 #brp *{box-sizing:border-box}#brp button{font:inherit;color:inherit;cursor:pointer}#brp [hidden]{display:none!important}
-.brp-box{margin:auto;width:min(980px,100%);max-height:100%;background:#f7f3ea;border-radius:20px;overflow:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.brp-box{margin:auto;width:min(980px,100%);max-height:100%;background:var(--surface-2);border-radius:20px;overflow:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .brp-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid #e6dfd2;background:#fbf8f2}
 .brp-top>b{font-family:"Libre Caslon Text",Georgia,serif;font-size:18px}
 .brp-seg{display:flex;gap:4px;background:#efe8dc;border-radius:12px;padding:3px}
@@ -5638,8 +5638,12 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 .brp-nav button{width:34px;height:34px;border-radius:10px;border:1px solid #e6dfd2;background:#fff;font-size:18px}.brp-nav button:disabled{opacity:.4;cursor:default}
 .brp-goes{font-weight:700;color:#a8711a;font-size:14px}
 .brp-x{border:1px solid #e6dfd2;background:#fff;border-radius:10px;padding:6px 12px;font-size:13px}
+.brp-alts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;font-size:13px;color:#857a6e}
+.brp-alts button{border:1px solid #e6dfd2;background:#fff;border-radius:999px;padding:5px 12px;font-size:14px;font-weight:700;color:#2a2420}
+.brp-alts button[aria-pressed=true]{background:#e9f3ee;border-color:#9cc9b2;color:#2f6b55}
+.brp-own{width:110px;border:1px dashed #c9bda8;border-radius:999px;padding:5px 10px;font:inherit;font-size:14px;background:transparent}
 .brp-main{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.brp-stage{position:relative;width:100%;height:min(320px,48vh);background:#fff;border-radius:18px;border:1px solid #ece4d6;overflow:hidden;touch-action:none;user-select:none}
+.brp-stage{position:relative;width:100%;height:min(300px,42vh);background:#fff;border-radius:18px;border:1px solid #ece4d6;overflow:hidden;touch-action:none;user-select:none}
 .brp-piece{position:absolute;top:22%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:18px;background:#fbf6ea;border:2px solid #e6dcc8;min-width:96px;transition:opacity .3s,transform .3s}
 .brp-piece b{font-size:clamp(24px,4vw,36px);font-weight:700}
 .brp-piece.a{background:#e9f3ee;border-color:#9cc9b2;color:#2f6b55;cursor:grab;z-index:2}
@@ -5660,6 +5664,54 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 .brp-hlab{position:absolute;left:4%;top:20%;font-size:clamp(24px,4vw,36px);font-weight:800;color:#2f6b55;letter-spacing:1px;white-space:nowrap;max-width:70%;overflow:hidden}
 .brp-piece#brpB{transition:left .35s cubic-bezier(.3,1.3,.5,1),opacity .3s,transform .3s}
 .brp-hold{width:min(420px,100%);padding:16px;border-radius:16px;border:2px solid #9cc9b2;background:#e9f3ee;color:#2f6b55;font-size:20px;font-weight:800;touch-action:none;user-select:none}
+#brp,#brp *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#brp input{-webkit-user-select:text;user-select:text}
+.brp-hold{-webkit-tap-highlight-color:transparent}
+.brp-trail{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.brp-trail path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.brp-trail .bg{stroke:#eef3ee;stroke-width:26;stroke-dasharray:2 16}.brp-trail .fg{stroke:#8cc9a5;stroke-width:24}
+.brp-head{position:absolute;transform:translate(-50%,-50%);font-size:clamp(30px,4.6vw,44px);line-height:1;transition:none;z-index:2;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.brp-head.gone,.brp-trail.gone{opacity:0;transition:opacity .3s ease}.brp-piece.catch{animation:brpcatch .26s ease}@keyframes brpcatch{50%{transform:scale(1.12)}}
+.brp-dots.mini{gap:4px}.brp-dots.mini i{width:15px;height:15px;font-size:9px;border-width:1.5px}.brp-dots.mini i.nq{font-size:13px}
+.brp-reps{display:flex;align-items:center;gap:3px;background:#efe8dc;border-radius:12px;padding:3px;font-size:12px;color:#857a6e}.brp-reps span{padding:0 4px}
+.brp-reps button{border:0;background:transparent;border-radius:9px;padding:5px 9px;font-size:13px;font-weight:700;color:#6b5f55;cursor:pointer}.brp-reps button[aria-pressed=true]{background:#fff;color:#2a2116;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.brp-bridge{position:relative;height:62px;background:linear-gradient(#cfe8f7,#eaf6fc);overflow:hidden;flex:none}
+.bb-cl{position:absolute;bottom:0;width:58px;height:30px;background:#9cc77f;display:flex;align-items:flex-start;justify-content:center;font-size:20px;line-height:1}.bb-cl span{display:block}
+.bb-cl.l{left:0;border-radius:0 18px 0 0;padding-top:0}.bb-cl.r{right:0;border-radius:18px 0 0 0}
+.bb-cl.l{font-size:24px;align-items:flex-start;padding-top:0;margin-top:0}
+.bb-water{position:absolute;left:56px;right:56px;bottom:0;height:14px;background:repeating-linear-gradient(90deg,#7cc3e8 0 14px,#8ccdee 14px 28px);animation:bbw 3s linear infinite}@keyframes bbw{to{background-position:28px 0}}
+.bb-planks{position:absolute;left:56px;right:56px;bottom:16px;display:flex;gap:3px}
+.bb-planks i{flex:1;height:13px;border-radius:3px;background:rgba(225,212,189,.55);border:2px dashed #c8b89a}
+.bb-planks i.on{background:#c98b4f;border:2px solid #a96f3a;animation:brpdot .45s cubic-bezier(.2,1.6,.4,1)}.bb-planks i.nr{background:#e8b45a;border:2px solid #c9922f;animation:brpdot .45s cubic-bezier(.2,1.6,.4,1)}
+.bb-planks i.cur{border-color:#b5543a;background:rgba(246,223,211,.8);animation:bbcur 1.4s ease-in-out infinite}@keyframes bbcur{50%{opacity:.5}}
+.bb-walker{position:absolute;bottom:28px;transform:translateX(-50%);font-size:28px;line-height:1;transition:left .8s cubic-bezier(.3,1.3,.5,1)}
+.brp-bridge.fin .bb-walker{animation:bbhop .5s ease-in-out 3}@keyframes bbhop{50%{transform:translate(-50%,-10px)}}
+.brp-stage.scn-train{background:linear-gradient(#bfe6ff,#eef8ff 66%,#bfe0a8 66%,#a9d48f);border:0}
+.sc-track{position:absolute;left:3%;right:3%;top:69%;height:12px;background:repeating-linear-gradient(90deg,#8a6a4a 0 7px,transparent 7px 26px),linear-gradient(#6f6f6f,#6f6f6f) 0 4px/100% 3px no-repeat}
+.sc-cloud{position:absolute;font-size:34px;opacity:.85}
+.scn-train .brp-piece{top:24%;border:0;border-radius:18px;padding:12px 18px 18px;min-width:120px;box-shadow:0 5px 0 rgba(0,0,0,.14)}
+.scn-train .brp-piece::after{content:"";position:absolute;bottom:-16px;left:18px;right:18px;height:24px;background:radial-gradient(circle at 12px 12px,#3a3a3a 10px,#9a9a9a 10.5px 11px,transparent 11.5px),radial-gradient(circle at calc(100% - 12px) 12px,#3a3a3a 10px,#9a9a9a 10.5px 11px,transparent 11.5px)}
+.scn-train .brp-piece.a{background:#ffd66b;color:#5c3f00}.scn-train .brp-piece.a::before{content:"";position:absolute;right:-22px;top:58%;width:24px;height:8px;border-radius:4px;background:#555}
+.scn-train .brp-piece.b{background:#8fd0b0;color:#14523a}
+.scn-train .brp-say{color:#2f4f22}
+.brp-stage.scn-dusk{background:linear-gradient(#ffd9b8,#fff1e2 60%,#f3d9b4 60%,#ecca9a);border:0}
+.sc-sun{position:absolute;right:22%;top:6%;font-size:40px;opacity:.9}
+.scn-dusk .brp-trail .bg{stroke:#fff5e8;stroke-width:34;stroke-dasharray:none;opacity:.85}.scn-dusk .brp-trail .fg{stroke:#f29a4a;stroke-width:28}
+.scn-dusk .brp-hlab{color:#a5501f}.scn-dusk .brp-piece.b{background:#fff;border:0;box-shadow:0 4px 0 rgba(0,0,0,.08)}.scn-dusk .brp-say{color:#7a4a25}
+.brp-hold{background:linear-gradient(#ffcf6b,#f7a94a)!important;color:#5c3000!important;border:0!important;border-radius:999px!important;box-shadow:0 6px 0 #d78a2c;font-weight:900!important;font-size:21px!important;padding:18px!important}
+.brp-hold.on{transform:translateY(4px)!important;box-shadow:0 2px 0 #d78a2c}
+.brp-stage.river{background:linear-gradient(180deg,#bfe6ff 0 38%,#7cc3e8 38% 82%,#a9d48f 82%)!important;border:0}
+.brp-set{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:8px 14px;background:#fbf8f2;border-bottom:1px solid #e6dfd2}
+.brp-strip{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fbf8f2;border-bottom:1px solid #e6dfd2}
+.brp-chips{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none;padding:2px}.brp-chips::-webkit-scrollbar{display:none}
+.brp-chip{flex:none;display:flex;align-items:center;gap:6px;border:1.5px solid #e6dfd2;background:#fff;border-radius:999px;padding:5px 12px 5px 8px;font-size:15px;font-weight:700;color:#5d5246;cursor:pointer}
+.brp-chip span{font-size:20px;line-height:1}.brp-chip i{font-style:normal;font-size:11px;font-weight:700;color:#3d9660;background:#e3f3e8;border-radius:999px;padding:1px 6px}
+.brp-chip.cur{border-color:#b5543a;background:#f6dfd3;color:#2a2116}.brp-chip.done{opacity:.75}
+.brp-arw{flex:none;width:40px;height:40px;border-radius:50%;border:1.5px solid #e6dfd2;background:#fff;font-size:22px;font-weight:700;color:#6b5f55;cursor:pointer}.brp-arw:disabled{opacity:.35}
+.brp-prog{height:8px;background:#efe8dc;position:relative}.brp-prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#f2b632,#e0803c);border-radius:0 6px 6px 0;transition:width .5s cubic-bezier(.3,1.2,.5,1)}.brp-prog b{position:absolute;right:6px;top:-9px;font-size:18px}
+.brp-count{display:flex;align-items:center;gap:10px;font-weight:700;color:#5d5246;font-size:15px}
+.brp-dots{display:flex;gap:6px}.brp-dots i{width:22px;height:22px;border-radius:50%;background:#efe8dc;border:2px solid #ddd3c2;display:grid;place-items:center;font-style:normal;font-size:12px;color:#fff}
+.brp-dots i.on{background:#4fae73;border-color:#3d9660}.brp-dots i.nr{background:#f2b632;border-color:#d99a1c;font-size:14px}.brp-dots i.nq{background:#ef9a85;border-color:#d97e68;font-size:18px}.brp-dots i.new{animation:brpdot .5s cubic-bezier(.2,1.6,.4,1)}@keyframes brpdot{0%{transform:scale(.3)}100%{transform:none}}
+.brp-fin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}.brp-fin .t{font-size:80px;line-height:1;animation:brpdot .6s cubic-bezier(.2,1.6,.4,1)}.brp-fin b{font-size:28px;color:#2a2116}.brp-fin span{color:#857a6e;font-size:15px}
+.brp-cheer{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:#fff4dc;border-radius:999px;padding:6px 14px;font-weight:800;color:#a8711a;font-size:16px;animation:brpdot .5s cubic-bezier(.2,1.6,.4,1);z-index:4;white-space:nowrap}
 .brp-hold.on{background:#cfe9db;transform:scale(.98)}.brp-hold:disabled{opacity:.5}
 .brp-stage.river{background:linear-gradient(180deg,#fff 0 38%,#cfe8f5 38% 82%,#e9f3ee 82%)}
 .brp-frog{position:absolute;top:30%;font-size:48px;transition:left .45s cubic-bezier(.3,1.4,.5,1);z-index:2}
@@ -5667,12 +5719,20 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 .brp-stones{position:absolute;left:14%;right:16%;top:52%;display:flex;justify-content:space-between;gap:8px}
 .brp-stone{min-width:86px;padding:10px 12px;border-radius:50%;border:0;background:#ddd3c2;font-size:14px;font-weight:700;color:#5d5246;box-shadow:0 4px 0 #c4b79f}
 .brp-stone.done{background:#a33a3a;color:#fff;box-shadow:0 4px 0 #7d2a2a}
-.brp-foot{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #e6dfd2;background:#fbf8f2;visibility:hidden}
+.brp-foot{display:flex;align-items:center;gap:8px;padding:12px 14px calc(18px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface);visibility:hidden;position:sticky;bottom:0;z-index:3;flex-wrap:wrap;row-gap:8px}
 .brp-foot.show{visibility:visible}
 .brp-g{border:1.5px solid #ddd5c8;background:#fff;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:700;color:#6b5f55}
+.brp-nq.nr{color:#a8711a;border-color:#ecd6a6}.brp-nq{border:1.5px solid #ddd5c8;background:#fff;color:#8a7560;border-radius:999px;padding:10px 18px;font-size:15px;font-weight:700}
+.brp-ic{flex:none;width:48px;height:48px;border-radius:50%;border:1.5px solid #e6dfd2;background:#fff;font-size:22px;color:#6b5f55;cursor:pointer}
+.brp-ans{flex:none;display:flex;align-items:center;gap:8px;white-space:nowrap;border:0;border-radius:18px;padding:12px 18px;font-size:17px;font-weight:800;cursor:pointer;transition:transform .08s;box-shadow:0 4px 0 var(--sh)}
+.brp-ans:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sh)}
+.brp-ans i{font-style:normal;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.35);font-size:15px}
+.brp-ans.ok{background:#4fae73;color:#fff;--sh:#37874f;padding:14px 26px;font-size:20px}.brp-ans.nr{background:#f7c548;color:#5c3f00;--sh:#d39f1f}.brp-ans.no{background:#f4a491;color:#5a2416;--sh:#d47f6a}
+@media (max-width:620px){.brp-ans{padding:10px 12px;font-size:15px}.brp-ans.ok{padding:12px 16px;font-size:17px}.brp-ans i{display:none}.brp-ic{width:42px;height:42px}}
 .brp-ok{border:0;background:#cfe7ea;color:#1f5560;border-radius:999px;padding:10px 22px;font-size:15px;font-weight:700}
 .brp-cfx{position:absolute;width:0;height:0;pointer-events:none;z-index:3}.brp-cfx i{position:absolute;width:9px;height:6px;border-radius:2px;animation:brpC .85s ease-out forwards}
 @keyframes brpC{to{transform:translate(var(--x),var(--y)) rotate(320deg);opacity:0}}
+#brp{--surface-2:var(--chip)}
 .gs-bc{position:relative}
 .gs-play{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:12px;cursor:pointer;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.brp-res.pop{animation:none}}
@@ -5683,33 +5743,39 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   const E=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   let B=null, lastMode="slide"; // {list:[{bk,it}], i, mode, k, done, goes, step, x}
   const pic=w=>{ try{ return picOf(w)||""; }catch(e){ return ""; } };
-  function parts(it){
-    if(it.F) return {A:it.lab[0],B:it.lab[1],W:it.lab[2],pa:it.e[0],pb:it.e[1],pw:it.e[2]};
-    if(it.S) return {A:it.S[0],B:it.S[1],W:it.S[2],pa:it.e1||"",pb:it.em||"",pw:pic(it.S[2])||it.e2||""};
-    if(it.C) return {A:it.C[0],B:it.C[1],W:it.C[2],pa:"",pb:pic(it.C[1])||it.e1||"",pw:pic(it.C[2])||it.e2||""};
-    if(it.R) return {A:it.R[0],B:it.R[1],W:it.R[2],pa:"",pb:it.e1||"",pw:pic(it.R[2])||it.e2||""};
-    if(it.L){ const m=String(it.L[1]).split(/[‑-]/); return {A:m[0]||it.L[0],B:m.slice(1).join("")||"",W:it.L[2],pa:"",pb:"",pw:it.e&&it.e!=="pic"?it.e:pic(it.L[2])}; }
-    return {A:it[0],B:it[1],W:it[0]+" "+it[1],pa:it[2]||"",pb:it[3]||"",pw:(it[2]||"")+(it[3]||""),phrase:true};
-  }
+  function parts(it){ let P;
+    if(it.F) P={A:it.lab[0],B:it.lab[1],W:it.lab[2],pa:it.e[0],pb:it.e[1],pw:it.e[2]};
+    else if(it.S) P={A:it.S[0],B:it.S[1],W:it.S[2],pa:it.e1||"",pb:it.em||"",pw:pic(it.S[2])||it.e2||""};
+    else if(it.C){ const a=String(it.C[0]); P={A:a,B:it.C[1],W:it.C[2],pa:pic(a)||"",pb:pic(it.C[1])||it.e1||"",pw:pic(it.C[2])||it.e2||"",hl:a.slice(-1),chain:true}; }
+    else if(it.R) P={A:it.R[0],B:it.R[1],W:it.R[2],pa:"",pb:it.e1||"",pw:pic(it.R[2])||it.e2||""};
+    else if(it.L){ const mm=String(it.L[1]).split(/[‑-]/); P={A:mm[0]||it.L[0],B:mm.slice(1).join("")||"",W:it.L[2],pa:"",pb:"",pw:it.e&&it.e!=="pic"?it.e:pic(it.L[2])}; }
+    else P={A:it[0],B:it[1],W:it[0]+" "+it[1],pa:it[2]||"",pb:it[3]||"",pw:(it[2]||"")+(it[3]||""),phrase:true};
+    P.f=bForms(it).map(x=>GSDISP[String(x).toLowerCase()]||x); return P; }
+  const PREF=(()=>{ try{ return JSON.parse(localStorage.getItem("sc-brp")||"{}")||{}; }catch(e){ return {}; } })();
+  function savePref(){ try{ localStorage.setItem("sc-brp",JSON.stringify(PREF)); }catch(e){} }
   function boom(host,x,y){ const b=document.createElement("div"); b.className="brp-cfx"; b.style.left=x+"px"; b.style.top=y+"px"; const cs=["#ff6b8b","#ffb020","#4fc3f7","#8e7cff","#5fcf8c"];
     for(let k=0;k<20;k++){ const e=document.createElement("i"), a=Math.random()*6.28, d=40+Math.random()*70; e.style.setProperty("--x",(Math.cos(a)*d).toFixed(0)+"px"); e.style.setProperty("--y",(Math.sin(a)*d).toFixed(0)+"px"); e.style.background=cs[k%5]; b.appendChild(e); } host.appendChild(b); setTimeout(()=>b.remove(),900); }
   function say(t){ try{ const u=new SpeechSynthesisUtterance(t); const v=speechSynthesis.getVoices().find(x=>x.lang==="en-AU"); if(v) u.voice=v; u.lang="en-AU"; u.rate=.8; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
   const cur=()=>B.list[B.i];
-  const canHiss=a=>/(s|z|f|v|m|n|l|r|h|sh|th|w|y)$/i.test(String(a||"").trim());
-  function stageHTML(){ const {it,bk}=cur(), P=parts(it), f=bForms(it).map(x=>GSDISP[String(x).toLowerCase()]||x);
-    if(B.mode==="slide") return `<div class="brp-stage" id="brpStage">
+  const SPEEDS=[["slow","🐢","Slow",0.016],["mid","🐇","Normal",0.028],["glide","🕊️","Glide",0.06]];
+  function spd(){ return SPEEDS.find(x=>x[0]===B.spd)||SPEEDS[1]; }
+  function trail(){ return {d:"M40 230 L740 230", h:spd()[1]}; }
+  const canHiss=a=>/(s|z|f|v|m|n|l|r|h|sh|th|w|y|a|e|i|o|u)$/i.test(String(a||"").trim());
+  function stageHTML(){ const {it}=cur(), P=parts(it), f=P.f;
+    if(B.fin) return `<div class="brp-stage" id="brpStage"><div class="brp-fin"><div class="t">🏆</div><b>All done!</b><span>${B.goes} tries · ${B.list.length} word${B.list.length===1?"":"s"} × ${B.reps}</span><span style="margin-top:6px"><button class="brp-g" data-brp="restart">↻ Go again</button></span></div></div>`;
+    if(B.mode==="slide") return `<div class="brp-stage scn-train" id="brpStage"><div class="sc-track"></div><div class="sc-cloud" style="left:12%;top:10%">☁️</div><div class="sc-cloud" style="left:70%;top:6%">☁️</div>
         <div class="brp-piece a" id="brpA" style="left:${B.x}%">${P.pa?`<span class="brp-pic">${P.pa}</span>`:""}<b>${E(P.A)}</b></div>
         <div class="brp-piece b" id="brpB">${P.pb?`<span class="brp-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
         <div class="brp-res" id="brpRes" ${B.done?"":"hidden"}>${P.pw?`<span class="brp-pic big">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
         <div class="brp-say" id="brpSay">${B.done?"":E(P.A)+" + "+E(P.B)}</div></div>
-      <div class="brp-steps">${f.map((x,i)=>`<button data-brp="auto" data-v="${i}">${E(x)}</button>`).join("")}</div>
-      <p class="brp-tip">${B.done?"":"Slide the first part across to join it up."}</p>`;
-    if(B.mode==="hiss") return `<div class="brp-stage" id="brpStage">
-        <div class="brp-snake" id="brpSnake"></div><div class="brp-hlab" id="brpHlab">${E(P.A)}</div>
+      <p class="brp-tip">${B.done?"":"Push the carriage to hook them up! 🚂"}</p>`;
+    if(B.mode==="hiss") return `<div class="brp-stage scn-dusk" id="brpStage"><div class="sc-sun">🌅</div>
+        <svg class="brp-trail" id="brpTrail" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="${trail().d}" class="bg"/><path d="${trail().d}" class="fg" id="brpPath"/></svg>
+        <div class="brp-head" id="brpHead" style="left:4%;top:57.5%">${trail().h}</div><div class="brp-hlab" id="brpHlab">${E(P.A)}</div>
         <div class="brp-piece b dim" id="brpB" style="left:76%">${P.pb?`<span class="brp-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
         <div class="brp-res" id="brpRes" ${B.done?"":"hidden"}>${P.pw?`<span class="brp-pic big">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
-        <div class="brp-say" id="brpSay">${B.done?"":canHiss(P.A)?"Hold the button and keep the sound going…":"Hold it… then let go into the next word"}</div></div>
-      <button class="brp-hold" id="brpHold" ${B.done?"disabled":""}>${canHiss(P.A)?`Hold me: ${E(P.A)}${E(P.A).slice(-1).repeat(3)}…`:`Hold me: ${E(P.A)}… then let go`}</button>`;
+        <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and keep the sound going…":"Hold it… then let go into the next word"}</div></div>
+      <button class="brp-hold" id="brpHold" ${B.done?"disabled":""}>${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`;
     return `<div class="brp-stage river" id="brpStage">
         <div class="brp-frog" id="brpFrog" style="left:${[4,22,48,74][B.step+1]}%">🐸</div>
         <div class="brp-bank">${P.pw?`<span class="brp-pic">${B.step>=2?P.pw:(P.pb||"🏁")}</span>`:"🏁"}</div>
@@ -5719,17 +5785,31 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   function draw(){ const o=document.getElementById("brp"); if(!o||!B) return; const {it}=cur(), P=parts(it);
     o.innerHTML=`<div class="brp-box">
       <div class="brp-top"><b>Bridge it</b><span class="brp-seg">${[["slide","Slide it in"],["hiss","Hold the sound"],["stones","Stepping stones"]].map(([v,l])=>`<button data-brp="mode" data-v="${v}" aria-pressed="${B.mode===v}">${l}</button>`).join("")}</span>
-        <span class="brp-nav"><button data-brp="prev" ${B.i?"":"disabled"} aria-label="Previous">‹</button><span>${B.i+1}/${B.list.length}</span><button data-brp="next" ${B.i<B.list.length-1?"":"disabled"} aria-label="Next">›</button></span>
-        <span class="brp-goes">★ ${B.goes}</span><button class="brp-x" data-brp="close">Close</button></div>
-      <div class="brp-main">${stageHTML()}</div>
-      <div class="brp-foot ${B.done?"show":""}"><button data-brp="hear" class="brp-g">🔊 ${E(P.W)}</button><span style="flex:1"></span><button data-brp="again" class="brp-g">↻ Again</button><button data-brp="said" class="brp-ok">✓ Said it</button></div>
+        <span style="flex:1"></span><button class="brp-x" data-brp="set" aria-pressed="${!!B.set}" aria-label="Settings">⚙︎ ${B.reps}×${B.mode==="hiss"?" "+spd()[1]:""}</button><span class="brp-goes">★ ${B.goes}</span><button class="brp-x" data-brp="close">Close</button></div>
+      ${B.set?`<div class="brp-set"><span class="brp-reps"><span>Reps per word</span>${[1,3,5,10].map(n=>`<button data-brp="reps" data-v="${n}" aria-pressed="${B.reps===n}">${n}</button>`).join("")}</span>
+        <span class="brp-reps"><span>Hold speed</span>${SPEEDS.map(([k,e,l])=>`<button data-brp="spd" data-v="${k}" aria-pressed="${spd()[0]===k}">${e} ${l}</button>`).join("")}</span></div>`:""}
+      <div class="brp-strip"><button class="brp-arw" data-brp="prev" ${B.i?"":"disabled"} aria-label="Previous word">‹</button><div class="brp-chips" id="brpChips">${B.list.map((x,i)=>{ const r=(B.res||{})[i]; const ok=r&&r.length?r.filter(v=>v===true).length:0;
+          return `<button class="brp-chip ${i===B.i?"cur":""} ${r&&r.length>=B.reps?"done":""}" data-brp="go" data-v="${i}" aria-current="${i===B.i}"><span>${parts(x.it).pw||"🔤"}</span>${E(parts(x.it).W)}${r&&r.length?`<i>${ok}/${r.length}</i>`:""}</button>`; }).join("")}</div><button class="brp-arw" data-brp="next" ${B.i<B.list.length-1?"":"disabled"} aria-label="Next word">›</button></div>
+      ${bridgeHTML()}
+      <div class="brp-main">${stageHTML()}${B.fin||B.reps<2?"":`<div class="brp-count"><span class="brp-dots">${dotsHTML()}</span><span>${B.r} of ${B.reps}</span></div>`}${P.alts?`<div class="brp-alts"><span>VC word:</span>${P.alts.map(a=>`<button data-brp="alt" data-v="${E(a)}" aria-pressed="${a===P.A}">${E(a)}</button>`).join("")}<input class="brp-own" id="brpOwn" placeholder="+ your own" aria-label="Your own VC word"></div>`:""}</div>
+      <div class="brp-foot ${B.done&&!B.fin?"show":""}"><button data-brp="hear" class="brp-ic" aria-label="Hear ${E(P.W)}">🔊</button><button data-brp="again" class="brp-ic" aria-label="Again">↻</button><span style="flex:1"></span>
+        <button data-brp="nq" class="brp-ans no"><i>·</i>Not quite</button><button data-brp="near" class="brp-ans nr"><i>≈</i>Nearly</button><button data-brp="said" class="brp-ans ok"><i>★</i>Said it!</button></div>
     </div>`;
+    B.pop=false; if(B.cheer){ const st=document.getElementById("brpStage"); if(st){ const c=document.createElement("div"); c.className="brp-cheer"; c.textContent=B.cheer; st.appendChild(c); setTimeout(()=>c.remove(),1800); } B.cheer=""; }
+    const cc=document.querySelector("#brpChips .cur"); if(cc) cc.scrollIntoView({block:"nearest",inline:"center"});
     bind(); }
+  function dotsHTML(){ const M={ok:["on","★"],near:["nr","≈"],no:["nq","·"]}; return Array.from({length:B.reps},(_,k)=>{ const v=(B.m||[])[k], m=k<B.r?M[v===true?"ok":v==="near"?"near":"no"]:null; return `<i class="${m?m[0]:""} ${k===B.r-1&&B.pop?"new":""}">${m?m[1]:""}</i>`; }).join(""); }
+  function bridgeHTML(){ const s0=Math.min(B.s0||0,B.i), n=B.list.length-s0, pct=progPct();
+    const pl=Array.from({length:n},(_,k)=>{ const i=s0+k, r=(B.res||{})[i]||[], full=r.length>=B.reps; const ok=r.filter(v=>v===true).length;
+      const cl=full?(ok*2>=r.length?"on":"nr"):i===B.i?"cur":""; return `<i class="${cl}"></i>`; }).join("");
+    return `<div class="brp-bridge ${B.fin?"fin":""}" aria-label="${pct}% of the bridge built"><div class="bb-cl l">🌳</div><div class="bb-cl r">🏁</div><div class="bb-water"></div><div class="bb-planks">${pl}</div>
+      <div class="bb-walker" style="left:calc(56px + (100% - 112px) * ${B.fin?1:pct/100})">${B.fin?"🙌":"🧒"}</div></div>`; }
+  function progPct(){ const s0=Math.min(B.s0||0,B.i), tot=(B.list.length-s0)*B.reps; return B.fin?100:Math.min(100,Math.round(((B.i-s0)*B.reps+B.r)/tot*100)); }
   function finish(){ if(B.done) return; B.done=true; const st=document.getElementById("brpStage"); const res=document.getElementById("brpRes");
-    ["brpA","brpB","brpSnake","brpHlab"].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
+    ["brpA","brpB","brpTrail","brpHead","brpHlab"].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
     if(res){ res.hidden=false; res.classList.add("pop"); } const s=document.getElementById("brpSay"); if(s) s.textContent="";
     if(st) boom(st, st.clientWidth*.5, st.clientHeight*.4);
-    const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); }
+    const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); const hb=document.getElementById("brpHold"); if(hb) hb.disabled=true; const sy=document.getElementById("brpSay"); if(sy) sy.textContent=""; }
   function setX(x){ const P=parts(cur().it); B.x=Math.max(2,Math.min(56,x)); const a=document.getElementById("brpA"); if(a) a.style.left=B.x+"%"; const g=56-B.x;
     const s=document.getElementById("brpSay"); if(s && !B.done) s.innerHTML = g>28?`${E(P.A)} + ${E(P.B)}`:g>5?`${E(P.A)}${"‑".repeat(Math.max(1,Math.round(g/7)))}${E(P.B)}`:`<b>${E(P.W)}</b>`;
     if(g<=5) finish(); }
@@ -5741,26 +5821,42 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       a.onpointerdown=e=>{ drag=true; a.setPointerCapture(e.pointerId); const r=a.getBoundingClientRect(); off=e.clientX-r.left; a.classList.add("drag"); };
       a.onpointermove=e=>{ if(!drag) return; const st=document.getElementById("brpStage").getBoundingClientRect(); setX((e.clientX-off-st.left)/st.width*100); };
       a.onpointerup=a.onpointercancel=()=>{ drag=false; a.classList.remove("drag"); }; }
+    const own=document.getElementById("brpOwn");
+    if(own) own.onkeydown=e=>{ if(e.key!=="Enter") return; const w=own.value.trim().toLowerCase(); if(!w) return; const it=cur().it; try{ S.client.vcOwn=S.client.vcOwn||{}; const l=(S.client.vcOwn[it.k] ||= []); if(!l.includes(w)) l.push(w); }catch(err){} act("alt",w); };
     const h=document.getElementById("brpHold");
-    if(h && !B.done){ let t=null, w=0; const sn=document.getElementById("brpSnake"), lab=document.getElementById("brpHlab"), P=parts(cur().it), ch=String(P.A).slice(-1);
-      const start=e=>{ e.preventDefault(); clearInterval(t); w=0; t=setInterval(()=>{ w=Math.min(w+3,100); sn.style.width=(8+w*.6)+"%"; lab.textContent=canHiss(P.A)?P.A+ch.repeat(Math.round(w/10)):P.A+" "+"·".repeat(Math.round(w/12)); h.classList.add("on"); },60); };
-      const end=()=>{ if(!t) return; clearInterval(t); t=null; h.classList.remove("on"); const s=document.getElementById("brpSay");
-        if(w<25){ if(s) s.textContent="Hold a bit longer!"; sn.style.width="8%"; lab.textContent=P.A; return; }
-        const b=document.getElementById("brpB"); if(b){ b.classList.remove("dim"); b.style.left=(8+w*.6+2)+"%"; }
-        setTimeout(finish,380); };
-      h.addEventListener("pointerdown",start); h.addEventListener("pointerup",end); h.addEventListener("pointerleave",end); h.addEventListener("pointercancel",end); }
+    if(h && !B.done){ let t=null, w=0; const lab=document.getElementById("brpHlab"), P=parts(cur().it), ch=P.hl||String(P.A).slice(-1);
+      const path=document.getElementById("brpPath"), head=document.getElementById("brpHead"), L=path?path.getTotalLength():1;
+      if(path){ path.style.strokeDasharray=L; path.style.strokeDashoffset=L; }
+      const paint=()=>{ if(!path) return; const l=L*w/100; path.style.strokeDashoffset=L-l; const pt=path.getPointAtLength(Math.max(.1,l)); head.style.left=(pt.x/10)+"%"; head.style.top=(pt.y/4)+"%"; };
+      const stretch=()=>{ lab.textContent=(P.hold??canHiss(P.A))?P.A+ch.repeat(Math.round(w/(ch.length>1?14:10))):P.A+" "+"·".repeat(Math.round(w/12)); };
+      const start=e=>{ e.preventDefault(); if(B.done) return; cancelAnimationFrame(t); t=null; w=0; paint(); const s0=document.getElementById("brpSay"); if(s0) s0.textContent=""; h.classList.add("on"); let last=performance.now(); const step=now=>{ if(!t) return; w=Math.min(w+(now-last)*spd()[3],92); last=now; paint(); stretch(); t=requestAnimationFrame(step); }; t=requestAnimationFrame(step); };
+      const end=()=>{ if(!t) return; cancelAnimationFrame(t); t=null; h.classList.remove("on"); const s=document.getElementById("brpSay");
+        if(w<25){ if(s) s.textContent="Hold a bit longer!"; w=0; paint(); lab.textContent=P.A; return; }
+        const b=document.getElementById("brpB"); if(b) b.classList.remove("dim");
+        zipEnd(); };
+      const zipEnd=()=>{ const b=document.getElementById("brpB"); if(b) b.classList.remove("dim"); const w0=w, t0=performance.now(), D=320;
+        const go=now=>{ const k=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k,3); w=w0+(100-w0)*e; paint(); if(k<1) requestAnimationFrame(go); else { if(b) b.classList.add("catch"); head.classList.add("gone"); setTimeout(finish,260); } }; requestAnimationFrame(go); };
+      h.addEventListener("contextmenu",e=>e.preventDefault()); h.addEventListener("selectstart",e=>e.preventDefault()); h.addEventListener("touchstart",e=>e.preventDefault(),{passive:false}); h.addEventListener("pointerdown",start); h.addEventListener("pointerup",end); h.addEventListener("pointerleave",end); h.addEventListener("pointercancel",end); }
   }
   function reset(){ B.done=false; B.step=-1; B.x=4; }
   function act(a,v,el){
     if(a==="close"){ close(); return; }
-    if(a==="mode"){ B.mode=v; lastMode=v; reset(); draw(); return; }
-    if(a==="prev"){ B.i=Math.max(0,B.i-1); reset(); draw(); return; }
-    if(a==="next"){ B.i=Math.min(B.list.length-1,B.i+1); reset(); draw(); return; }
+    if(a==="mode"){ B.mode=v; lastMode=v; if(B.chain){ PREF.chainMode=v; savePref(); } reset(); draw(); return; }
+    if(a==="prev"){ B.i=Math.max(0,B.i-1); B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
+    if(a==="next"){ B.i=Math.min(B.list.length-1,B.i+1); B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
+    if(a==="reps"){ B.reps=+v; B.r=Math.min(B.r,B.reps-1<0?0:B.r); if(B.r>=B.reps){ B.r=0; B.m=[]; } PREF.reps=B.reps; savePref(); draw(); return; }
+    if(a==="go"){ B.i=+v; B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
+    if(a==="set"){ B.set=!B.set; draw(); return; }
+    if(a==="spd"){ B.spd=v; PREF.spd=v; savePref(); draw(); return; }
+    if(a==="restart"){ B.res={}; B.i=0; B.s0=0; B.m=[]; B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
     if(a==="again"){ reset(); draw(); return; }
     if(a==="hear"){ say(parts(cur().it).W); return; }
-    if(a==="said"){ const {bk,it}=cur(); const f=bForms(it); let stp=0; try{ const c=window.cur&&window.cur(); stp=(c&&c.bridge&&c.bridge[bk])||0; }catch(e){}
-      try{ recTrial(true, f[stp]); }catch(e){} B.goes++; reset();
-      if(B.i<B.list.length-1) B.i++; draw(); try{ toast("Added to the tally"); }catch(e){} return; }
+    if(a==="said"||a==="nq"||a==="near"){ const ok=a==="said", {it,bk}=cur(); try{ const f=bForms(it); let stp=0; try{ const c=window.cur&&window.cur(); stp=(c&&c.bridge&&c.bridge[bk])||0; }catch(e){} recTrial(ok, f[stp], a==="near"); }catch(e){} B.goes++; const rv=ok?true:a==="near"?"near":false; (B.m ||= []).push(rv); ((B.res ||= {})[B.i] ||= []).push(rv); B.r++; B.pop=true; reset();
+      const ms={10:"10 tries! 🔥",25:"25 tries! 🚀",50:"50 tries! 🌟",75:"75! Unstoppable 💪",100:"100 tries! 🏆"};
+      if(B.r>=B.reps){ B.r=0; B.m=[]; if(B.i<B.list.length-1){ B.i++; B.cheer=ms[B.goes]||(B.reps>1?"Word done! ⭐":""); } else { B.fin=true; } }
+      else B.cheer=ms[B.goes]||(ok?"":a==="near"?"So close! ≈":"Good try! Again 💪");
+      draw(); const st=document.getElementById("brpStage"); if(st&&(B.fin||B.cheer)) boom(st, st.clientWidth*.5, st.clientHeight*.35); return; }
+    if(a==="alt"){ const c=cur(); const it=c.it; const nw=Object.assign(brMake(it.B,it.k,v),{said:it.said,miss:it.miss,near:it.near}); c.it=nw; try{ S.client.vcPick=S.client.vcPick||{}; S.client.vcPick[it.k]=v; scheduleSave(); }catch(e){} reset(); draw(); return; }
     if(a==="auto"){ const i=+v; const ap=document.getElementById("brpA"); if(ap){ ap.style.transition="left .5s"; setTimeout(()=>{ if(ap) ap.style.transition=""; },520); } setX(i===0?4:i===1?44:57); return; }
     if(a==="stone"){ const i=+v; if(i!==B.step+1) return; B.step=i; draw(); if(i===2) setTimeout(()=>{ B.done=false; finish(); },420); return; }
   }
@@ -5768,8 +5864,8 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   window.brOpen=function(k,bk){ const o0=GS[k]; if(!o0) return; const gf=(S.ui&&S.ui.gsGrp)||"";
     const list=(o0.br||[]).filter(it=>(!gf || ((it.F||it.R||it.S||it.C||it.L)?it.g:it[5])===gf)).map(it=>({it,bk:bKey(k,it)}));
     if(!list.length){ try{ toast("No bridge words for this sound yet."); }catch(e){} return; }
-    let i=Math.max(0,list.findIndex(x=>x.bk===bk));
-    B={list,i,mode:lastMode,goes:0,k}; reset();
+    const i=Math.max(0,list.findIndex(x=>x.bk===bk)), chain=!!list[i].it.C;
+    B={list,i,mode:chain?(PREF.chainMode||"hiss"):lastMode,chain,goes:0,reps:PREF.reps||3,spd:PREF.spd||"mid",res:{},s0:i,r:0,fin:false,cheer:"",k}; reset();
     let o=document.getElementById("brp"); if(!o){ o=document.createElement("div"); o.id="brp"; o.setAttribute("role","dialog"); o.setAttribute("aria-modal","true"); o.setAttribute("aria-label","Bridge it practice"); document.body.appendChild(o); }
     document.documentElement.style.overflow="hidden"; draw(); };
   document.addEventListener("keydown",e=>{ if(e.key==="Escape" && document.getElementById("brp")) close(); });
