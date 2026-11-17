@@ -5733,6 +5733,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 .brp-cfx{position:absolute;width:0;height:0;pointer-events:none;z-index:3}.brp-cfx i{position:absolute;width:9px;height:6px;border-radius:2px;animation:brpC .85s ease-out forwards}
 @keyframes brpC{to{transform:translate(var(--x),var(--y)) rotate(320deg);opacity:0}}
 #brp{--surface-2:var(--chip)}
+.brp-eq{position:absolute;left:0;right:0;top:12px;text-align:center;font-size:clamp(22px,3.6vw,34px);font-weight:800;color:var(--ink);z-index:2}.brp-eq i{font-style:normal;color:var(--muted);margin:0 4px}.brp-eq b{color:#3F6B52}
 .gs-bc{position:relative}
 .gs-play{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:12px;cursor:pointer;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.brp-res.pop{animation:none}}
@@ -5772,7 +5773,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     if(B.mode==="hiss") return `<div class="brp-stage scn-dusk" id="brpStage"><div class="sc-sun">🌅</div>
         <svg class="brp-trail" id="brpTrail" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="${trail().d}" class="bg"/><path d="${trail().d}" class="fg" id="brpPath"/></svg>
         <div class="brp-head" id="brpHead" style="left:4%;top:57.5%">${trail().h}</div><div class="brp-hlab" id="brpHlab">${E(P.A)}</div>
-        <div class="brp-piece b dim" id="brpB" style="left:76%">${P.pb?`<span class="brp-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
+        <div class="brp-eq">${E(P.A)} <i>+</i> ${E(P.B)} <i>=</i> <b>${E(P.W)}</b></div><div class="brp-piece b" id="brpB" style="left:76%">${P.pb?`<span class="brp-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
         <div class="brp-res" id="brpRes" ${B.done?"":"hidden"}>${P.pw?`<span class="brp-pic big">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
         <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and keep the sound going…":"Hold it… then let go into the next word"}</div></div>
       <button class="brp-hold" id="brpHold" ${B.done?"disabled":""}>${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`;
@@ -5806,7 +5807,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       <div class="bb-walker" style="left:calc(56px + (100% - 112px) * ${B.fin?1:pct/100})">${B.fin?"🙌":"🧒"}</div></div>`; }
   function progPct(){ const s0=Math.min(B.s0||0,B.i), tot=(B.list.length-s0)*B.reps; return B.fin?100:Math.min(100,Math.round(((B.i-s0)*B.reps+B.r)/tot*100)); }
   function finish(){ if(B.done) return; B.done=true; const st=document.getElementById("brpStage"); const res=document.getElementById("brpRes");
-    ["brpA","brpB","brpTrail","brpHead","brpHlab"].forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
+    ["brpA","brpB","brpTrail","brpHead","brpHlab"].concat([]).forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
     if(res){ res.hidden=false; res.classList.add("pop"); } const s=document.getElementById("brpSay"); if(s) s.textContent="";
     if(st) boom(st, st.clientWidth*.5, st.clientHeight*.4);
     const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); const hb=document.getElementById("brpHold"); if(hb) hb.disabled=true; const sy=document.getElementById("brpSay"); if(sy) sy.textContent=""; }
