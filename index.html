@@ -5733,6 +5733,23 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
 .brp-cfx{position:absolute;width:0;height:0;pointer-events:none;z-index:3}.brp-cfx i{position:absolute;width:9px;height:6px;border-radius:2px;animation:brpC .85s ease-out forwards}
 @keyframes brpC{to{transform:translate(var(--x),var(--y)) rotate(320deg);opacity:0}}
 #brp{--surface-2:var(--chip)}
+.scn-chain{background:#F4F8EF!important}
+.ch-row{position:absolute;left:3%;right:3%;top:8%;bottom:30%;display:flex;align-items:stretch;gap:1.2%}
+.ch-snake{flex:1.8;position:relative;background:#fff;border-radius:22px;box-shadow:0 4px 0 rgba(0,0,0,.06);overflow:hidden}
+.ch-snake svg{position:absolute;left:4%;right:4%;top:28%;bottom:8%;width:92%;height:64%;overflow:visible}
+.ch-snake .bg{fill:none;stroke:#DDE8D3;stroke-width:14;stroke-linecap:round;stroke-dasharray:2 16}
+.ch-snake .fg{fill:none;stroke:#5FAF5A;stroke-width:14;stroke-linecap:round}
+.ch-lab{position:absolute;left:14px;top:8px;font-size:clamp(26px,4.4vw,44px);font-weight:900;color:#3F7A3A;letter-spacing:.02em;white-space:nowrap;max-width:92%;overflow:hidden}
+.ch-op{align-self:center;font-size:clamp(28px,5vw,50px);font-weight:900;color:#9AA88E}
+.ch-card{flex:1;background:#fff;border-radius:22px;box-shadow:0 4px 0 rgba(0,0,0,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;transition:transform .3s}
+.ch-card b{font-size:clamp(20px,3.4vw,34px);font-weight:900;color:var(--ink)}
+.ch-pic{font-size:clamp(40px,8vw,84px);line-height:1.05;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif}
+.ch-card.catch{transform:scale(1.06);box-shadow:0 0 0 4px #F4C04F,0 4px 0 rgba(0,0,0,.06)}
+.ch-card.res{border:3px dashed #B9D7B0}
+.ch-card.res.pop{border:3px solid #5FAF5A;background:#EEF8EA;animation:brpPop .45s cubic-bezier(.2,1.5,.4,1)}.ch-card.res.pop b{color:#2F6B3A}
+.scn-chain #brpHead.gone{opacity:0;transition:opacity .2s}
+@media (max-width:640px){.ch-row{gap:4px}.ch-snake{flex:1.3}}
+
 .brp-eq{position:absolute;left:0;right:0;top:12px;text-align:center;font-size:clamp(22px,3.6vw,34px);font-weight:800;color:var(--ink);z-index:2}.brp-eq i{font-style:normal;color:var(--muted);margin:0 4px}.brp-eq b{color:#3F6B52}
 .gs-bc{position:relative}
 .gs-play{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:12px;cursor:pointer;color:var(--ink)}
@@ -5770,12 +5787,17 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
         <div class="brp-res" id="brpRes" ${B.done?"":"hidden"}>${P.pw?`<span class="brp-pic big">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
         <div class="brp-say" id="brpSay">${B.done?"":E(P.A)+" + "+E(P.B)}</div></div>
       <p class="brp-tip">${B.done?"":"Push the carriage to hook them up! 🚂"}</p>`;
-    if(B.mode==="hiss") return `<div class="brp-stage scn-dusk" id="brpStage"><div class="sc-sun">🌅</div>
-        <svg class="brp-trail" id="brpTrail" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="${trail().d}" class="bg"/><path d="${trail().d}" class="fg" id="brpPath"/></svg>
-        <div class="brp-head" id="brpHead" style="left:4%;top:57.5%">${trail().h}</div><div class="brp-hlab" id="brpHlab">${E(P.A)}</div>
-        <div class="brp-eq">${E(P.A)} <i>+</i> ${E(P.B)} <i>=</i> <b>${E(P.W)}</b></div><div class="brp-piece b" id="brpB" style="left:76%">${P.pb?`<span class="brp-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
-        <div class="brp-res" id="brpRes" ${B.done?"":"hidden"}>${P.pw?`<span class="brp-pic big">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
-        <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and keep the sound going…":"Hold it… then let go into the next word"}</div></div>
+    if(B.mode==="hiss") return `<div class="brp-stage scn-chain" id="brpStage">
+        <div class="ch-row">
+          <div class="ch-snake"><b class="ch-lab" id="brpHlab">${E(P.A)}</b>
+            <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true"><path d="M18 55 C 48 20, 78 20, 108 55 S 168 90, 198 55 S 258 20, 284 52" class="bg"/><path d="M18 55 C 48 20, 78 20, 108 55 S 168 90, 198 55 S 258 20, 284 52" class="fg" id="brpPath"/>
+            <g id="brpHead" transform="translate(18 55)"><circle r="11" fill="#5FAF5A"/><circle cx="3" cy="-4" r="2.6" fill="#fff"/><circle cx="3.6" cy="-4" r="1.3" fill="#222"/><path d="M10 2 l8 2 l-8 2" stroke="#E2645A" stroke-width="2" fill="none"/></g></svg></div>
+          <span class="ch-op">+</span>
+          <div class="ch-card" id="brpB">${P.pb?`<span class="ch-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
+          <span class="ch-op">=</span>
+          <div class="ch-card res ${B.done?"pop":""}" id="brpRes">${P.pw?`<span class="ch-pic">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
+        </div>
+        <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and slide along the snake… then say "+E(P.B)+"!":"Hold it… then let go into "+E(P.B)}</div></div>
       <button class="brp-hold" id="brpHold" ${B.done?"disabled":""}>${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`;
     return `<div class="brp-stage river" id="brpStage">
         <div class="brp-frog" id="brpFrog" style="left:${[4,22,48,74][B.step+1]}%">🐸</div>
@@ -5807,7 +5829,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       <div class="bb-walker" style="left:calc(56px + (100% - 112px) * ${B.fin?1:pct/100})">${B.fin?"🙌":"🧒"}</div></div>`; }
   function progPct(){ const s0=Math.min(B.s0||0,B.i), tot=(B.list.length-s0)*B.reps; return B.fin?100:Math.min(100,Math.round(((B.i-s0)*B.reps+B.r)/tot*100)); }
   function finish(){ if(B.done) return; B.done=true; const st=document.getElementById("brpStage"); const res=document.getElementById("brpRes");
-    ["brpA","brpB","brpTrail","brpHead","brpHlab"].concat([]).forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
+    (B.mode==="hiss"?[]:["brpA","brpB","brpTrail","brpHead","brpHlab"]).forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
     if(res){ res.hidden=false; res.classList.add("pop"); } const s=document.getElementById("brpSay"); if(s) s.textContent="";
     if(st) boom(st, st.clientWidth*.5, st.clientHeight*.4);
     const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); const hb=document.getElementById("brpHold"); if(hb) hb.disabled=true; const sy=document.getElementById("brpSay"); if(sy) sy.textContent=""; }
@@ -5828,7 +5850,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     if(h && !B.done){ let t=null, w=0; const lab=document.getElementById("brpHlab"), P=parts(cur().it), ch=P.hl||String(P.A).slice(-1);
       const path=document.getElementById("brpPath"), head=document.getElementById("brpHead"), L=path?path.getTotalLength():1;
       if(path){ path.style.strokeDasharray=L; path.style.strokeDashoffset=L; }
-      const paint=()=>{ if(!path) return; const l=L*w/100; path.style.strokeDashoffset=L-l; const pt=path.getPointAtLength(Math.max(.1,l)); head.style.left=(pt.x/10)+"%"; head.style.top=(pt.y/4)+"%"; };
+      const paint=()=>{ if(!path) return; const l=L*w/100; path.style.strokeDashoffset=L-l; const pt=path.getPointAtLength(Math.max(.1,l)); if(head.ownerSVGElement) head.setAttribute("transform","translate("+pt.x.toFixed(1)+" "+pt.y.toFixed(1)+")"); else { head.style.left=(pt.x/10)+"%"; head.style.top=(pt.y/4)+"%"; } };
       const stretch=()=>{ lab.textContent=(P.hold??canHiss(P.A))?P.A+ch.repeat(Math.round(w/(ch.length>1?14:10))):P.A+" "+"·".repeat(Math.round(w/12)); };
       const start=e=>{ e.preventDefault(); if(B.done) return; cancelAnimationFrame(t); t=null; w=0; paint(); const s0=document.getElementById("brpSay"); if(s0) s0.textContent=""; h.classList.add("on"); let last=performance.now(); const step=now=>{ if(!t) return; w=Math.min(w+(now-last)*spd()[3],92); last=now; paint(); stretch(); t=requestAnimationFrame(step); }; t=requestAnimationFrame(step); };
       const end=()=>{ if(!t) return; cancelAnimationFrame(t); t=null; h.classList.remove("on"); const s=document.getElementById("brpSay");
