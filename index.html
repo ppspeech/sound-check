@@ -4396,7 +4396,8 @@ function brInfo(w){if(!BRMAP){BRMAP={};Object.values(GS).forEach(o=>(o.br||[]).f
   const it=BRMAP[String(w).toLowerCase()];if(!it)return null;const t=bForms(it)[2];if(String(t).toLowerCase()===String(w).toLowerCase())return null;const pc=x=>picOf(x)||"";let a,b,pa="",pb="",rep=false;
   if(it.F){[a,b]=it.lab;pa=it.e[0];pb=it.e[1]}else if(it.S){a=it.S[0];b=it.S[1];pa=it.e1||"";pb=it.em||""}else if(it.C){a=it.C[0];b=it.C[1];pa=pc(a);pb=pc(b)||it.e1||""}
   else if(it.R){a=it.R[1]+"-"+it.R[1]+"-"+it.R[1];b=it.R[0];pa=it.e1||"";rep=true}else if(it.L){const m=String(it.L[1]).split(/[‑-]/);a=m[0];b=m.slice(1).join("");}else{a=it[0];b=it[1];pa=it[2]||"";pb=it[3]||""}
-  const tp=pc(t)||it.e2||(it.F?it.e[2]:"")||"";return {t,tp,txt:rep?`${a} → ${t}`:`${a} + ${b} = ${t}`,pics:(pa||"")+(pb||"")}}
+  const tp=pc(t)||it.e2||(it.F?it.e[2]:"")||"";return {t,tp,txt:rep?`${a} → ${t}`:`${a} + ${b} = ${t}`,pics:(pa||"")+(pb||""),pa,pb,rep}}
+function brPicHTML(w){const bi=BFORM[String(w).toLowerCase()]?brInfo(w):null;if(!bi)return picOf(w)||'';const op=x=>`<span style="font-size:.7em;opacity:.55;margin:0 .1em">${x}</span>`;const top=bi.rep?`${bi.pa||''}${op('→')}`:`${bi.pa||''}${bi.pb?op('+')+bi.pb:''}${op('=')}`;return `<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1.05"><span style="font-size:.3em;white-space:nowrap">${top}</span><span style="font-size:.62em">${bi.tp}</span></span>`}
 function hwItems(c,g){const s=S.sess&&S.sess.cid===c.id&&S.sess.goalId===g.id?S.sess:null;const disp=w=>GSDISP[String(w).toLowerCase()]||w;
   if(g.approach==='trad'){let ws=s&&s.words.length?s.words.slice():null;
     if(!ws){const all=tradWords(g).filter(x=>shapeOK(g,x));ws=[...all.filter(w=>picOf(w)),...all.filter(w=>!picOf(w))].slice(0,12)}
@@ -5447,7 +5448,7 @@ document.addEventListener('click',async e=>{
    case 'wsOpen':{if(!window.SpeechGames){toast('Games are still loading. Try again in a moment.');return}const v=b.dataset.v,ws=shuffle(WS_SETS[v]||[]);const cid=c.id;
      SpeechGames.open({practice:true,items:ws.map(w=>({key:w,text:w})),pic:w=>WS_PIC[w]||picOf(w),who:(c.name||'').split(' ')[0],title:v+' words',state:c.games||{},onSave:st=>{const cc=S.clients[cid];if(cc){cc.games=st;persist(cid)}}});break}
    case 'gkOpen':{if(!window.SpeechGames){toast('Games are still loading. Try again in a moment.');return}const s=S.sess,g=c.goals.find(x=>x.id===s.goalId);const deck=fcDeck(g,s);if(!deck.length){toast('No words for this level yet.');return}
-     const cid=c.id;SpeechGames.open({items:deck.map(it=>({key:it.w,text:it.t})),pic:w=>w?picOf(w):'',who:(c.name||'').split(' ')[0],title:(typeof noteLabel==='function'?noteLabel(g):goalBigLabel(g)),state:c.games||{},
+     const cid=c.id;SpeechGames.open({items:deck.map(it=>({key:it.w,text:it.t})),pic:w=>w?brPicHTML(w):'',who:(c.name||'').split(' ')[0],title:(typeof noteLabel==='function'?noteLabel(g):goalBigLabel(g)),state:c.games||{},
        onSave:st=>{const cc=S.clients[cid];if(cc){cc.games=st;persist(cid)}},
        onFinish:res=>{if(!S.sess||S.sess.cid!==cid)return;res.forEach(r=>recTrial(r.k==='clear',r.key,r.k==='near'));render();toast(res.length?`Added ${res.length} tries to the tally.`:'No tries to add.')}});break}
    case 'fcOpen':{const s=S.sess,g=c.goals.find(x=>x.id===s.goalId);const deck=fcDeck(g,s);if(!deck.length){toast('No words for this level yet.');return}S.fc={deck,i:0,rep:0,stars:0,rounds:0,enter:true,pop:-1};render();break}
