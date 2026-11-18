@@ -4391,13 +4391,19 @@ function goalsView(c){
 /* ============================== HOMEWORK LINK (family page on GitHub, words packed in the link) ============================== */
 const HW_HOME='https://ppspeech.github.io/sound-check/family/';
 function hwName(c){return String(c.name||'').replace(/^example\s*[–-]\s*/i,'').trim().slice(0,20)}
+let BRMAP=null;
+function brInfo(w){if(!BRMAP){BRMAP={};Object.values(GS).forEach(o=>(o.br||[]).forEach(it=>bForms(it).forEach(f=>{BRMAP[String(f).toLowerCase()]=it})))}
+  const it=BRMAP[String(w).toLowerCase()];if(!it)return null;const t=bForms(it)[2];if(String(t).toLowerCase()===String(w).toLowerCase())return null;const pc=x=>picOf(x)||"";let a,b,pa="",pb="",rep=false;
+  if(it.F){[a,b]=it.lab;pa=it.e[0];pb=it.e[1]}else if(it.S){a=it.S[0];b=it.S[1];pa=it.e1||"";pb=it.em||""}else if(it.C){a=it.C[0];b=it.C[1];pa=pc(a);pb=pc(b)||it.e1||""}
+  else if(it.R){a=it.R[1]+"-"+it.R[1]+"-"+it.R[1];b=it.R[0];pa=it.e1||"";rep=true}else if(it.L){const m=String(it.L[1]).split(/[‑-]/);a=m[0];b=m.slice(1).join("");}else{a=it[0];b=it[1];pa=it[2]||"";pb=it[3]||""}
+  const tp=pc(t)||it.e2||(it.F?it.e[2]:"")||"";return {t,tp,txt:rep?`${a} → ${t}`:`${a} + ${b} = ${t}`,pics:(pa||"")+(pb||"")}}
 function hwItems(c,g){const s=S.sess&&S.sess.cid===c.id&&S.sess.goalId===g.id?S.sess:null;const disp=w=>GSDISP[String(w).toLowerCase()]||w;
   if(g.approach==='trad'){let ws=s&&s.words.length?s.words.slice():null;
     if(!ws){const all=tradWords(g).filter(x=>shapeOK(g,x));ws=[...all.filter(w=>picOf(w)),...all.filter(w=>!picOf(w))].slice(0,12)}
-    return ws.slice(0,30).map(w=>[disp(w),picOf(w)||''])}
+    const seen=new Set();return ws.slice(0,30).map(w=>{const bi=BFORM[String(w).toLowerCase()]?brInfo(w):null;if(bi){if(seen.has(bi.t.toLowerCase()))return null;seen.add(bi.t.toLowerCase());return [bi.t,bi.tp,"",bi.txt,bi.pics]}if(seen.has(String(disp(w)).toLowerCase()))return null;seen.add(String(disp(w)).toLowerCase());return [disp(w),picOf(w)||'']}).filter(Boolean)}
   let keys=s?s.words.filter(k=>String(k).includes('/')||BFORM[String(k).toLowerCase()]):[];
   if(!keys.length){const ps=pairsFor(g).map(p=>p[0]+'/'+p[1]);const pk=ps.filter(k=>picOf(k.split('/')[0]));keys=(pk.length>=6?pk:ps).slice(0,12)}
-  return keys.slice(0,30).map(k=>{if(BFORM[String(k).toLowerCase()])return [disp(k),picOf(k)||''];const [a,b]=k.split('/');return [a,picOf(a)||'',b]})}
+  return keys.slice(0,30).map(k=>{if(BFORM[String(k).toLowerCase()]){const bi=brInfo(k);return bi?[bi.t,bi.tp,"",bi.txt,bi.pics]:[disp(k),picOf(k)||'']}const [a,b]=k.split('/');return [a,picOf(a)||'',b]})}
 function hwURL(c,g){const w=hwItems(c,g);if(!w.length)return '';const gt=goalTitle(g);
   const o={n:hwName(c),t:(goalBigLabel(g)+' · '+gt.sub).slice(0,60),w};if(g.approach==='trad'&&FAMK.includes(g.target))o.k=g.target;
   const u=new TextEncoder().encode(JSON.stringify(o));let b='';u.forEach(x=>b+=String.fromCharCode(x));
@@ -4411,7 +4417,7 @@ function hwModal(c){const g=(c.goals||[]).find(x=>x.id===S.ui.hw);if(!g)return '
    <div class="hwgrid"><div class="hwl"><p style="margin:0 0 8px">Opens on their phone or iPad: flashcards, games and stars. Progress stays on their device. Only “${esc(name)}” and the words go in the link.</p>
      <input type="text" readonly id="hw-url" value="${esc(url)}" onclick="this.select()" aria-label="Homework link">
      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="hwCopy">Copy link</button><a class="btn" href="sms:?&body=${encodeURIComponent(`Here’s ${name}’s speech practice: ${url}`)}">Text it</a><a class="btn" href="mailto:?subject=${encodeURIComponent(`${name}’s speech practice`)}&body=${encodeURIComponent(`Hi! Here’s ${name}’s practice for this week. Open it on a phone or iPad:\n\n${url}`)}">Email it</a><a class="btn" href="${esc(url)}" target="_blank" rel="noopener">Preview</a></div>
-     <div class="sub"><span class="label">${items.length} words · ${fromSess?'the ones selected in today’s session':'picked automatically (select words in a session to choose your own)'}</span><div class="words" style="margin-top:6px">${items.map(x=>`<span class="pill">${x[1]?x[1]+' ':''}${esc(x[0])}${x[2]?` <span class="muted" style="font-weight:600">not ${esc(x[2])}</span>`:''}</span>`).join('')}</div></div></div>
+     <div class="sub"><span class="label">${items.length} words · ${fromSess?'the ones selected in today’s session':'picked automatically (select words in a session to choose your own)'}</span><div class="words" style="margin-top:6px">${items.map(x=>`<span class="pill">${x[1]?x[1]+' ':''}${esc(x[3]||x[0])}${x[2]?` <span class="muted" style="font-weight:600">not ${esc(x[2])}</span>`:''}</span>`).join('')}</div></div></div>
     <div class="hwq">${qr?qr+'<small class="hint">Scan with the phone camera</small>':'<small class="hint">Too many words for a QR code. Copy or text the link instead.</small>'}</div></div></div></div>`}
 const FAMK=['p','b','t','d','k','g','f','v','th','s','z','sh','h','ch','j','m','n','ng','l','r','w','y','cs','cl','cr'];
 function famURL(c,g){if(g.approach!=='trad'||!FAMK.includes(g.target))return '';const cl=['cs','cl','cr'].includes(g.target);const p=['i','m','f'].includes(g.position)?g.position:'i';
