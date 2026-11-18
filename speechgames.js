@@ -12,7 +12,7 @@ function ensureLive(){ return LV; }
 function ensureFx(){ return LV; }
 function saveLive(){}
 function wantWake(){}
-function scheduleSave(){ try{ OPT.onSave && OPT.onSave({stickers:S.client.stickers, tank:S.client.tank, sound:S.client.sound, lastGame:S.client.lastGame, pics:picsOn()}); }catch(e){} }
+function scheduleSave(){ try{ OPT.onSave && OPT.onSave({stickers:S.client.stickers, tank:S.client.tank, drinks:S.client.drinks, sound:S.client.sound, lastGame:S.client.lastGame, pics:picsOn()}); }catch(e){} }
 function fxItems(){ return GOAL.stimuli.map((w,si)=>({g:GOAL,si})); }
 function fxCurrent(){ if(!GOAL.stimuli.length) return null; if(!LV.cur) LV.cur={gid:"w",si:0}; return {g:GOAL, si:LV.cur.si}; }
 function fxPickNext(cur){ const n=GOAL.stimuli.length; if(!n) return null; const si=cur?(cur.si+1)%n:0; LV.cur={gid:"w",si}; return {g:GOAL,si}; }
@@ -229,7 +229,7 @@ function tankHTML(G){
   if(!G.sea) G.sea=Array.from({length:5},()=>seaOne(Math.random()<.1));
   if(G.bonus && !G.sea.some(c=>c.rare)) G.sea[rnd(5)]=seaOne(true);
   return `<div class="ocean"><div class="sea">${G.sea.map((c,i)=>`<button class="seac ${c.rare?"rare":""}" data-act="gcatch" data-v="${i}" style="top:${c.y}%;--d:${c.d}s;--dl:-${((now+c.o)%c.d).toFixed(2)}s" ${can?"":"disabled"} aria-label="Catch it">${c.f}</button>`).join("")}<span class="sea-l">Tap a sea creature to catch it</span></div>
-    <div class="mytank"><b>My tank · ${tank.length}</b><div class="mt-g">${tank.length?tank.slice(-30).map(f=>`<span>${f}</span>`).join(""):`<em>Empty. Catch your first one!</em>`}</div></div></div>`;
+    <div class="mytank"><div class="mt-h"><b>My tank · ${tank.length}</b>${tank.length?(G.tankAsk?`<span class="mt-ask">Empty the tank? <button data-act="gtankclear" data-v="1">Yes, empty it</button><button data-act="gtankclear" data-v="0">Keep</button></span>`:`<button class="mt-clear" data-act="gtankclear" data-v="ask">Empty tank</button>`):""}</div><div class="mt-g">${tank.length?tank.slice(-30).map(f=>`<span>${f}</span>`).join(""):`<em>Empty. Catch your first one!</em>`}</div></div></div>`;
 }
 async function catchFish(i,btn){
   const G=gstate(); if(!canPlay(G) || !G.sea) return; const c=G.sea[i]; if(!c) return; takeBonus(G);
@@ -258,6 +258,10 @@ function gameArea(G,th){
   if(G.type==="barrel"){ const r=barrelHTML(G); return {pill:`🦜 Barrel ${G.barrel.pops+1}`, turn:status, body:r}; }
   if(G.type==="mole"){ const r=moleHTML(G); return {pill:`🐹 ${G.mole.bonks} bonks`, turn:status, body:r}; }
   if(G.type==="ttt"){ const r=tttHTML(G); return {pill:`⭕ Game ${G.ttt.games+1}`, turn:status, body:r}; }
+  if(G.type==="pacer"){ const r=pacerHTML(G); return {pill:`🟣 Row ${G.pacer.rows+1}`, turn:status, body:r}; }
+  if(G.type==="roll"){ const r=rollHTML(G); return {pill:`🎲 Picture ${G.roll.done+1}`, turn:status, body:r}; }
+  if(G.type==="build"){ const r=buildHTML(G); return {pill:`🌸 Build ${G.build.made+1}`, turn:status, body:r}; }
+  if(G.type==="maze"){ const r=mazeHTML(G); return {pill:`🧭 Maze ${G.maze.found+1}`, turn:status, body:r}; }
   if(G.type==="paint"){ const r=paintHTML(G); return {pill:`🎨 ${PAINT_PICS[G.paint.pic%PAINT_PICS.length].name}`, turn:status, body:r}; }
   return null;
 }
@@ -268,13 +272,47 @@ GAMES.push(
   {id:"barrel", name:"Parrot Barrel", art:"🦜", bg:"linear-gradient(135deg,#d9b48a,#9c6b3f)", col:"#8a5a12", how:"Push a sword into the barrel. Who will make the parrot jump?"},
   {id:"mole", name:"Bonk the Mole", art:"🐹", bg:"linear-gradient(135deg,#c9e7a8,#8cc06b)", col:"#4f7d2f", how:"Bonk the mole when it pops up."},
   {id:"ttt", name:"Tic Tac Toe", art:"⭕", bg:"linear-gradient(135deg,#d6e9ff,#9cc3f5)", col:"#2f6db8", how:"Play noughts and crosses against Munch."},
-  {id:"paint", name:"Paint Splash", art:"🎨", bg:"linear-gradient(135deg,#ffe7f0,#ffc2d6)", col:"#c2407a", how:"Paint one part of the picture each turn."}
+  {id:"paint", name:"Paint Splash", art:"🎨", bg:"linear-gradient(135deg,#ffe7f0,#ffc2d6)", col:"#c2407a", how:"Paint one part of the picture each turn."},
+  {id:"bridge", name:"Bridge it", art:"🌉", bg:"linear-gradient(135deg,#d8ecdf,#a9d4bb)", col:"#2f6b55", how:"Join a VC word onto the target: slide it, hold the sound or hop the stones."}
 );
 Object.assign(GAME_CALL,{smoothie:"🥤 Add something to the smoothie!",stars:"🚀 Catch a star!",barrel:"🗡️ Pick a slot!",mole:"🐹 Bonk the mole!",ttt:"⭐ Your move!",paint:"🎨 Paint a part!"});
 const rnd=n=>Math.floor(Math.random()*n);
 
 /* Smoothie Maker */
 const SM_ING=[["🍓","#e46a72"],["🍌","#efd36a"],["🫐","#6f73c9"],["🥝","#94bf5e"],["🥭","#f2a65a"],["🍍","#ecd25e"],["🥛","#f1ece2"],["🧊","#d6eef8"]], SM_BONUS=[["🍫","#7a5546"],["🍯","#d9a441"]];
+const SM_INFO={"🍓":["Strawberry","sweet and sunny","Speed","Zoom"],"🍌":["Banana","creamy and dreamy","Strength","Monkey"],"🫐":["Blueberry","tangy","Brain power","Galaxy"],"🥝":["Kiwi","zingy","Bounce","Jungle"],"🥭":["Mango","tropical","Sunshine","Volcano"],"🍍":["Pineapple","fizzy-sharp","Courage","Pirate"],"🥛":["Milk","smooth","Strength","Cloud"],"🧊":["Ice","frosty","Cool","Frost"],"🍫":["Chocolate","rich and fudgy","Giggles","Choc"],"🍯":["Honey","golden-sweet","Buzz","Honey"]};
+const SM_SUF=["Blast","Storm","Splash","Fizz","Rocket","Twister","Supreme","Explosion","Zinger","Whirl"];
+const SM_PLACE=["a rainforest after the rain","a birthday party","a pirate ship","outer space","the beach at sunset","a lolly shop","a dragon's cave","a snowy mountain"];
+const SM_POW={"Speed":"run faster than a cheetah on a skateboard","Strength":"lift a car with one finger","Brain power":"solve any puzzle in three seconds","Bounce":"jump over a giraffe","Sunshine":"glow in the dark like a firefly","Courage":"talk to a dragon without blinking","Cool":"freeze puddles just by looking at them","Giggles":"make anyone laugh with one wink","Buzz":"talk to bees","Zoom":"fly for one whole minute"};
+function smHex(h){ return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)); }
+function smColName([r,g,b]){ const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/510; if(l>.86) return "Cloud White"; if(mx-mn<24) return l<.4?"Thunder Grey":"Moonbeam Silver"; let h; const d=mx-mn; if(mx===r) h=((g-b)/d)%6; else if(mx===g) h=(b-r)/d+2; else h=(r-g)/d+4; h=(h*60+360)%360;
+  if(l<.38&&h<50) return "Mud Puddle Brown"; if(d<90&&h<70) return "Caramel Swirl"; if(d<70) return "Stormy Lilac"; return h<15?"Rocket Red":h<40?"Sunset Orange":h<65?"Banana Gold":h<160?"Jungle Green":h<200?"Lagoon Teal":h<255?"Ocean Blue":h<300?"Galaxy Purple":h<340?"Unicorn Pink":"Rocket Red"; }
+function smMake(ing,n){ const col=e=>(SM_ING.concat(SM_BONUS).find(x=>x[0]===e)||["","#cccccc"])[1]; const cols=ing.map(col); const avg=cols.map(smHex).reduce((a,c)=>a.map((v,i)=>v+c[i]/cols.length),[0,0,0]).map(Math.round);
+  const info=ing.map(e=>SM_INFO[e]).filter(Boolean); const uniq=[...new Set(ing)]; const st={}; info.forEach(i=>st[i[2]]=(st[i[2]]||0)+1); const top=Object.entries(st).sort((a,b)=>b[1]-a[1])[0]?.[0]||"Speed";
+  const w=[...new Set(info.map(i=>i[3]))]; const name=`${w[0]||"Mystery"} ${w[1]&&w[1]!==w[0]?w[1]+" ":""}${SM_SUF[(n+ing.length)%SM_SUF.length]}`;
+  const tastes=[...new Set(info.map(i=>i[1]))]; const taste=tastes.length>1?`Tastes ${tastes.slice(0,-1).slice(0,2).join(", ")} and ${tastes[tastes.length-1]}.`:`Tastes ${tastes[0]||"mysterious"}.`;
+  const stats=["Speed","Strength","Brain power","Giggles"].map(k=>[k,Math.min(5,1+(st[k]||0)*2+((n+k.length)%2))]);
+  const rar=ing.some(e=>SM_BONUS.some(b=>b[0]===e))?"Legendary":uniq.length>=5?"Super rare":uniq.length>=4?"Rare":"Tasty";
+  return {name,ing,cols,colour:smColName(avg),avg:`rgb(${avg.join(",")})`,taste:`${taste} Smells like ${SM_PLACE[(n*3+ing.length)%SM_PLACE.length]}.`,power:`${top}: you can ${SM_POW[top]||"do anything"}!`,stats,rar,at:Date.now()}; }
+function glassSVG(d,cls){ const id="g"+Math.random().toString(36).slice(2,8); const stops=d.cols.map((c,i)=>`<stop offset="${(i/(Math.max(1,d.cols.length-1))*100).toFixed(0)}%" stop-color="${c}"/>`).join("");
+  return `<svg class="glass ${cls||""}" viewBox="0 0 120 170" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1">${stops}</linearGradient><clipPath id="${id}c"><path d="M22 40 L98 40 L88 158 Q60 166 32 158 Z"/></clipPath></defs>
+    <rect x="68" y="2" width="7" height="70" rx="3" transform="rotate(14 72 40)" fill="#ff6b8b"/><g clip-path="url(#${id}c)"><rect x="0" y="40" width="120" height="130" fill="url(#${id})"/><rect x="0" y="40" width="120" height="130" fill="${d.avg}" opacity=".45"/>
+    <circle class="bub" cx="45" cy="140" r="4" fill="#fff" opacity=".55"/><circle class="bub b2" cx="70" cy="150" r="3" fill="#fff" opacity=".5"/><circle class="bub b3" cx="58" cy="155" r="2.5" fill="#fff" opacity=".6"/>
+    <path d="M22 46 Q40 38 60 46 T98 46 L98 40 L22 40 Z" fill="#fff" opacity=".55"/></g><path d="M22 40 L98 40 L88 158 Q60 166 32 158 Z" fill="none" stroke="#8a7f74" stroke-width="3" stroke-linejoin="round"/><path d="M30 52 L36 148" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+    <text x="96" y="44" font-size="22" text-anchor="middle">${d.ing[0]||""}</text></svg>`; }
+function smShowHTML(M){ const d=M.show; if(!d) return ""; return `<div class="smshow ${M.showNew?"new":""}" role="dialog" aria-label="Your drink">
+    <div class="sms-spot"></div><div class="sms-card show">
+      <div class="sms-l"><div class="sms-drum">${M.showNew?"And your drink is…":""}</div>
+      <div class="sms-glass">${glassSVG(d,"big")}<span class="sms-rar r-${d.rar.replace(/\s/g,"")}">${d.rar}</span></div>
+      <h3 class="sms-name">${esc(d.name)}</h3>
+      <div class="sms-ing">${d.ing.map(e=>`<span>${e}</span>`).join("")}</div></div>
+      <div class="sms-r"><div class="sms-facts"><div><small>Colour</small><b><i style="background:${d.avg}"></i>${esc(d.colour)}</b></div><div><small>Taste</small><span>${esc(d.taste)}</span></div><div><small>Super power</small><span>${esc(d.power)}</span></div></div>
+      <div class="sms-stats">${d.stats.map(([k,v])=>`<div><small>${k}</small><span class="bar"><i style="width:${v*20}%"></i></span></div>`).join("")}</div>
+      <div class="sms-btns"><button data-act="gsmgal">My drinks (${(S.client.drinks||[]).length})</button><button class="go" data-act="gsmclose">Make another!</button></div></div>
+    </div></div>`; }
+function smGalHTML(M){ if(!M.galOpen) return ""; const g=(S.client.drinks||[]).slice().reverse(); return `<div class="smshow gal" role="dialog" aria-label="My drinks"><div class="sms-card wide"><h3 class="sms-name">My drinks</h3>
+    ${g.length?`<div class="smg">${g.map((d,i)=>`<button data-act="gsmpick" data-v="${g.length-1-i}">${glassSVG(d)}<b>${esc(d.name)}</b><small>${esc(d.rar)}</small></button>`).join("")}</div>`:`<p>No drinks yet. Blend one!</p>`}
+    <div class="sms-btns"><button class="go" data-act="gsmgalx">Back to blending</button></div></div></div>`; }
 const smRecipe=()=>{ const r=[]; while(r.length<5){ const x=SM_ING[rnd(SM_ING.length)][0]; if(!r.includes(x)) r.push(x); } return r; };
 function smoothieHTML(G){
   G.smoothie ||= {mode:"recipe", recipe:smRecipe(), added:[], made:0}; const M=G.smoothie, can=canPlay(G);
@@ -288,7 +326,8 @@ function smoothieHTML(G){
       <div class="blender ${M.pending||(M.mode==="recipe"?need.length===1:M.added.length===4)?"ready":""}" id="gblend"><div class="jar"><span class="liq" style="background:linear-gradient(180deg,${(M.added.length?M.added:["🍓"]).map(col).join(",")})"></span>${M.added.map((e,k)=>{ const c=k%3, r=Math.floor(k/3); return `<i class="pc ${k===M.added.length-1&&Date.now()-(M.dropAt||0)<700?"drop":""}" style="left:${4+c*28+(r%2?12:0)}px;bottom:${2+r*26}px;--r:${(k*47)%40-20}deg">${e}</i>`; }).join("")}</div><div class="lid"></div><div class="base"><b></b></div></div>
     </div>
     <div class="smo-shelf">${shelf.map(([e])=>`<button data-act="gsadd" data-v="${e}" ${can?"":"disabled"} class="${M.mode==="recipe"&&!need.includes(e)?"dim":""}">${e}</button>`).join("")}</div>
-  </div>`;
+    ${(S.client.drinks||[]).length?`<button class="smo-galbtn" data-act="gsmgal">🖼️ My drinks (${S.client.drinks.length})</button>`:""}
+  </div>${smShowHTML(M)}${smGalHTML(M)}`;
 }
 async function smoothieAdd(e,btn){
   const G=gstate(); if(!canPlay(G)) return; const M=G.smoothie;
@@ -300,7 +339,8 @@ async function smoothieAdd(e,btn){
 }
 async function smoothieBlend(){
   const G=gstate(), M=G.smoothie; if(!M?.pending) return; M.pending=false;
-  S.fx.busy=true; await sleep(250); document.getElementById("gblend")?.classList.add("blending"); snd("roll"); await sleep(1600); S.fx.busy=false; M.made++; M.added=[]; M.recipe=smRecipe(); const st=giveSticker(); saveLive(); renderMain(); celebrate(`<div class="gfx-e">🥤</div><b>Smoothie ready!</b><span>Sticker: ${st}</span>`);
+  S.fx.busy=true; await sleep(250); document.getElementById("gblend")?.classList.add("blending"); snd("roll"); await sleep(1600); S.fx.busy=false; const d=smMake(M.added.slice(),M.made); M.made++; M.added=[]; M.recipe=smRecipe(); const st=giveSticker(); d.sticker=st; (S.client.drinks ||= []).push(d); if(S.client.drinks.length>40) S.client.drinks=S.client.drinks.slice(-40); scheduleSave(); M.show=d; M.showNew=true; saveLive(); snd("roll"); renderMain();
+  setTimeout(()=>{ if(M.show!==d) return; M.showNew=false; renderMain(); snd("win"); sayTxt(d.name); const c=ROOT&&ROOT.querySelector(".sms-card"); if(c) for(let k=0;k<3;k++) setTimeout(()=>confetti(c,c.clientWidth*(.2+.3*k),60),k*180); },1600);
 }
 /* Star Sprint */
 function starsHTML(G){
@@ -421,18 +461,113 @@ async function paintPart(i){
   renderMain();
 }
 
+/* ---------- Games, set 4 (Say & Do style): Pacer, Roll & Say, Build it, Maze ---------- */
+GAMES.push(
+  {id:"pacer", name:"Pacer board", art:"🟣", bg:"linear-gradient(135deg,#e8e2f7,#c9bdf0)", col:"#5a54a8", how:"Tap the next dot as they say it. Ten dots, one row."},
+  {id:"roll", name:"Roll & say", art:"🎲", bg:"linear-gradient(135deg,#ffe9c7,#ffc98a)", col:"#b36b12", how:"Roll the die, say the word that many times, colour a piece."},
+  {id:"build", name:"Build it", art:"🌸", bg:"linear-gradient(135deg,#fde2ea,#f7b9cf)", col:"#b8456f", how:"Add a petal, a candle or a scoop with every word."},
+  {id:"maze", name:"Maze walk", art:"🧭", bg:"linear-gradient(135deg,#dcefe4,#a8d8bd)", col:"#2f7d5a", how:"Each word is one step through the maze to the treasure."}
+);
+Object.assign(GAME_CALL,{pacer:"🟣 Tap the next dot!",roll:"🎲 Roll the die!",build:"🌸 Add a piece!",maze:"🧭 Take a step!"});
+/* Pacer board */
+function pacerHTML(G){
+  G.pacer ||= {n:0, rows:0}; const P=G.pacer, can=canPlay(G);
+  return `<div class="pcr"><div class="pcr-row">${Array.from({length:10},(_,i)=>`<button class="pdot ${i<P.n?"on":""} ${i===P.n?"next":""}" data-act="gpace" data-v="${i}" ${can&&i===P.n?"":"disabled"} aria-label="Dot ${i+1}"></button>`).join("")}</div>
+    <div class="brl-n">${P.n}/10 · rows done: ${P.rows}</div></div>`;
+}
+async function pacerTap(i){
+  const G=gstate(); if(!canPlay(G)) return; const P=G.pacer; if(i!==P.n) return; takeBonus(G);
+  P.n++; snd("tick"); reveal(G);
+  if(P.n>=10){ P.pending=true; }
+  renderMain();
+}
+async function pacerDone(){ const G=gstate(), P=G.pacer; if(!P?.pending) return; P.pending=false; const st=giveSticker(); celebrate(`<div class="gfx-e">🟣✨</div><b>Row done!</b><span>Sticker: ${st}</span>`); P.n=0; P.rows++; saveLive(); setTimeout(renderMain,2600); }
+/* Roll & say */
+const ROLL_PICS=[{name:"Balloon bunch",parts:[["circle","cx=60 cy=40 r=20","balloon"],["circle","cx=100 cy=32 r=20","balloon"],["circle","cx=140 cy=42 r=20","balloon"],["circle","cx=80 cy=70 r=18","balloon"],["circle","cx=120 cy=72 r=18","balloon"],["path","d=M100 90 L100 115 M60 60 L100 112 M140 62 L100 112","strings"]]},
+ {name:"Caterpillar",parts:[["circle","cx=30 cy=70 r=18","head"],["circle","cx=62 cy=70 r=18","body"],["circle","cx=94 cy=70 r=18","body"],["circle","cx=126 cy=70 r=18","body"],["circle","cx=158 cy=70 r=18","body"],["path","d=M22 54 L14 36 M38 54 L46 36","feelers"]]},
+ {name:"Rocket",parts:[["path","d=M100 10 L125 60 L75 60 Z","nose"],["rect","x=75 y=60 width=50 height=40","body"],["circle","cx=100 cy=78 r=9","window"],["path","d=M75 100 L60 118 L75 112 Z","fin"],["path","d=M125 100 L140 118 L125 112 Z","fin"],["path","d=M88 112 L100 130 L112 112 Z","flame"]]}];
+const ROLL_COLS=["#e46a72","#f2a65a","#f2d35e","#8fc46d","#6aa8e0","#b48be0"];
+function rollHTML(G){
+  G.roll ||= {pic:0, fill:{}, last:0, done:0}; const R=G.roll, pic=ROLL_PICS[R.pic%ROLL_PICS.length], can=canPlay(G);
+  const attrs=a=>a.replace(/(\w+)=("[^"]*"|\S+)/g,(m,k,v)=>`${k}=${v.startsWith('"')?v:'"'+v+'"'}`);
+  return `<div class="rll"><svg viewBox="0 0 200 135" class="pnt-svg" role="img" aria-label="${pic.name}">${pic.parts.map(([tag,a,label],i)=>`<${tag} ${attrs(a)} fill="${R.fill[i]||"#fff"}" stroke="${R.fill[i]?"#00000022":"#c9bda8"}" stroke-width="3" stroke-dasharray="${R.fill[i]?"0":"5 4"}"/><text x="${12+i*30}" y="130" font-size="11" fill="${R.fill[i]?"#8a7f73":"#2a2420"}" font-weight="700">${i+1}${R.fill[i]?" ✓":""}</text>`).join("")}</svg>
+    <div class="gact"><span class="gdie" id="rdie">${["⚀","⚁","⚂","⚃","⚄","⚅"][Math.max(0,R.last-1)]||"🎲"}</span><button class="groll" data-act="gorll" ${can?"":"disabled"}>${can?"Roll!":"Say the word first"}</button></div>
+    <div class="brl-n">${R.last?`You rolled ${R.last}: say it ${R.last} time${R.last===1?"":"s"}`:"Roll, then say the word that many times"} · ${pic.name} ${Object.keys(R.fill).length}/6</div></div>`;
+}
+async function rollSay(){
+  const G=gstate(); if(!canPlay(G)) return; takeBonus(G); const R=G.roll; S.fx.busy=true;
+  const die=document.getElementById("rdie"); const faces=["⚀","⚁","⚂","⚃","⚄","⚅"]; for(let k=0;k<8;k++){ if(die) die.textContent=faces[rnd(6)]; snd("tick"); await sleep(90); }
+  S.fx.busy=false; const n=rnd(6)+1; R.last=n; R.fill[n-1]=ROLL_COLS[n-1]; R.reps=n; reveal(G);
+  if(ROLL_PICS[R.pic%ROLL_PICS.length].parts.every((_,k)=>R.fill[k])) R.pending=true;
+  renderMain();
+}
+async function rollDone(){ const G=gstate(), R=G.roll; if(!R?.pending) return; R.pending=false; const st=giveSticker(); celebrate(`<div class="gfx-e">🎲🎨</div><b>All coloured in!</b><span>Sticker: ${st}</span>`); R.pic++; R.fill={}; R.last=0; R.done++; saveLive(); setTimeout(renderMain,2600); }
+/* Build it: flower → cake → ice cream */
+const BUILDS=[{name:"flower",n:8,done:"🌸 Flower finished!",e:"🌸",piece:"petal"},{name:"cake",n:6,done:"🎂 Cake finished!",e:"🎂",piece:"candle"},{name:"ice cream",n:5,done:"🍦 Ice cream finished!",e:"🍦",piece:"scoop"},{name:"pizza",n:6,done:"🍕 Pizza ready!",e:"🍕",piece:"topping"},{name:"snowman",n:6,done:"⛄ Snowman built!",e:"⛄",piece:"piece"},{name:"robot",n:6,done:"🤖 Robot built!",e:"🤖",piece:"part"}];
+function buildSVG(kind,n){
+  if(kind==="flower") return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true">${Array.from({length:8},(_,i)=>{ const a=i*45*Math.PI/180, x=100+Math.cos(a)*52, y=96+Math.sin(a)*52; return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="18" ry="30" transform="rotate(${i*45} ${x.toFixed(1)} ${y.toFixed(1)})" fill="${i<n?["#f7a8c4","#f9c4d8","#f48fb1","#fbb8d0"][i%4]:"none"}" stroke="${i<n?"#e26a95":"#d8ccb6"}" stroke-width="2" stroke-dasharray="${i<n?0:"5 4"}"/>`; }).join("")}<circle cx="100" cy="96" r="24" fill="#ffd54f" stroke="#e0a800" stroke-width="3"/><path d="M100 120 L100 190" stroke="#5aa066" stroke-width="6" stroke-linecap="round"/><path d="M100 160 Q70 150 72 172 Q90 176 100 160Z" fill="#7fc46a"/></svg>`;
+  if(kind==="cake") return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true"><rect x="30" y="110" width="140" height="60" rx="10" fill="#f6c89a" stroke="#d99a5b" stroke-width="3"/><path d="M30 118 Q60 140 100 118 Q140 96 170 118 L170 110 L30 110Z" fill="#f48fb1"/>${Array.from({length:6},(_,i)=>{ const x=50+i*20; return `<rect x="${x-4}" y="70" width="8" height="40" rx="3" fill="${i<n?["#6aa8e0","#e46a72","#8fc46d","#f2d35e","#b48be0","#f2a65a"][i]:"none"}" stroke="${i<n?"none":"#d8ccb6"}" stroke-dasharray="${i<n?0:"4 3"}"/>${i<n?`<ellipse cx="${x}" cy="62" rx="5" ry="9" fill="#ffb300"/><ellipse cx="${x}" cy="64" rx="2.5" ry="5" fill="#fff3b0"/>`:""}`; }).join("")}</svg>`;
+  if(kind==="pizza") return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true"><circle cx="100" cy="100" r="86" fill="#f2c27b" stroke="#c98b3f" stroke-width="4"/><circle cx="100" cy="100" r="72" fill="#e8574a"/><circle cx="100" cy="100" r="66" fill="#ffd96b"/>${[[70,70],[128,66],[100,104],[62,118],[138,122],[100,150]].map(([x,y],i)=>i<n?[`<circle cx="${x}" cy="${y}" r="13" fill="#c0392b"/>`,`<ellipse cx="${x}" cy="${y}" rx="14" ry="8" fill="#7fc46a"/>`,`<circle cx="${x}" cy="${y}" r="11" fill="#f2a65a"/><circle cx="${x}" cy="${y}" r="4" fill="#ffd96b"/>`,`<rect x="${x-12}" y="${y-8}" width="24" height="16" rx="4" fill="#8b5a2b"/>`,`<circle cx="${x}" cy="${y}" r="12" fill="#444"/><circle cx="${x}" cy="${y}" r="4" fill="#ffd96b"/>`,`<path d="M${x-12} ${y+8} L${x} ${y-10} L${x+12} ${y+8} Z" fill="#f7e36b"/>`][i]:`<circle cx="${x}" cy="${y}" r="13" fill="none" stroke="#c98b3f" stroke-width="2" stroke-dasharray="4 3"/>`).join("")}</svg>`;
+  if(kind==="snowman") return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true">${[`<circle cx="100" cy="150" r="42" fill="#fff" stroke="#bcd" stroke-width="3"/>`,`<circle cx="100" cy="92" r="32" fill="#fff" stroke="#bcd" stroke-width="3"/>`,`<circle cx="100" cy="48" r="24" fill="#fff" stroke="#bcd" stroke-width="3"/><circle cx="92" cy="44" r="3" fill="#333"/><circle cx="108" cy="44" r="3" fill="#333"/>`,`<path d="M100 50 L122 56 L100 60 Z" fill="#f2a65a"/>`,`<rect x="82" y="14" width="36" height="8" fill="#333"/><rect x="88" y="0" width="24" height="16" fill="#333"/>`,`<path d="M76 70 Q100 86 124 70 L128 80 Q100 98 72 80 Z" fill="#e46a72"/><rect x="112" y="76" width="10" height="26" rx="4" fill="#e46a72"/>`].map((part,i)=>i<n?part:"").join("")}${n<6?`<text x="100" y="190" font-size="12" text-anchor="middle" fill="#8a7f73">${["body","middle","head","nose","hat","scarf"][n]} next</text>`:""}</svg>`;
+  if(kind==="robot") return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true">${[`<rect x="60" y="80" width="80" height="70" rx="10" fill="#9ab8d0" stroke="#4e6f8c" stroke-width="3"/><circle cx="100" cy="115" r="12" fill="#ffd54f"/>`,`<rect x="68" y="30" width="64" height="48" rx="10" fill="#b9d0e2" stroke="#4e6f8c" stroke-width="3"/><circle cx="86" cy="52" r="7" fill="#2b2420"/><circle cx="114" cy="52" r="7" fill="#2b2420"/><rect x="84" y="64" width="32" height="5" rx="2" fill="#4e6f8c"/>`,`<rect x="96" y="12" width="8" height="18" fill="#4e6f8c"/><circle cx="100" cy="10" r="7" fill="#e46a72"/>`,`<rect x="30" y="86" width="26" height="12" rx="6" fill="#9ab8d0" stroke="#4e6f8c" stroke-width="3"/><circle cx="26" cy="92" r="9" fill="#f2a65a"/>`,`<rect x="144" y="86" width="26" height="12" rx="6" fill="#9ab8d0" stroke="#4e6f8c" stroke-width="3"/><circle cx="174" cy="92" r="9" fill="#f2a65a"/>`,`<rect x="68" y="152" width="22" height="34" rx="6" fill="#9ab8d0" stroke="#4e6f8c" stroke-width="3"/><rect x="110" y="152" width="22" height="34" rx="6" fill="#9ab8d0" stroke="#4e6f8c" stroke-width="3"/>`].map((part,i)=>i<n?part:"").join("")}${n<6?`<text x="100" y="198" font-size="12" text-anchor="middle" fill="#8a7f73">${["body","head","antenna","left arm","right arm","legs"][n]} next</text>`:""}</svg>`;
+  return `<svg viewBox="0 0 200 200" class="pnt-svg" aria-hidden="true"><path d="M70 120 L100 195 L130 120 Z" fill="#f2c27b" stroke="#c98b3f" stroke-width="3"/><path d="M78 130 L122 130 M84 145 L116 145 M90 160 L110 160" stroke="#c98b3f" stroke-width="2"/>${Array.from({length:5},(_,i)=>`<circle cx="100" cy="${118-i*20}" r="22" fill="${i<n?["#f9d5a7","#f48fb1","#b8e0c8","#c9bdf0","#fff0a0"][i]:"none"}" stroke="${i<n?"#00000022":"#d8ccb6"}" stroke-width="2" stroke-dasharray="${i<n?0:"5 4"}"/>`).join("")}</svg>`;
+}
+function buildHTML(G){
+  G.build ||= {k:0, n:0, made:0}; const B=G.build, kind=BUILDS[B.k%BUILDS.length], can=canPlay(G);
+  return `<div class="bld"><div class="bld-pick" role="group" aria-label="What to build">${BUILDS.map((k,i)=>`<button data-act="gbpick" data-v="${i}" aria-pressed="${i===B.k%BUILDS.length}" ${B.n&&i!==B.k%BUILDS.length?"disabled":""} title="${k.name}">${k.e}</button>`).join("")}</div>${buildSVG(kind.name,B.n)}<div class="gact"><button class="groll" data-act="gbuild" ${can?"":"disabled"}>${can?`+ ${kind.piece}`:"Say the word first"}</button></div><div class="brl-n">${B.n}/${kind.n} · ${B.made} built${B.n?"":" · pick what to build"}</div></div>`;
+}
+async function buildAdd(){
+  const G=gstate(); if(!canPlay(G)) return; takeBonus(G); const B=G.build, kind=BUILDS[B.k%BUILDS.length];
+  B.n++; snd("pop"); reveal(G); if(B.n>=kind.n) B.pending=true; renderMain();
+}
+async function buildDone(){ const G=gstate(), B=G.build; if(!B?.pending) return; B.pending=false; const kind=BUILDS[B.k%BUILDS.length]; const st=giveSticker(); celebrate(`<div class="gfx-e">${kind.name==="flower"?"🌸":kind.name==="cake"?"🎂":"🍦"}</div><b>${kind.done}</b><span>Sticker: ${st}</span>`); B.k=(B.k+1)%BUILDS.length; B.n=0; B.made++; saveLive(); setTimeout(renderMain,2600); }
+/* Maze walk: fixed path on a 6x6 grid */
+const MAZE_PATH=[[0,5],[1,5],[1,4],[1,3],[2,3],[3,3],[3,4],[3,5],[4,5],[5,5],[5,4],[5,3],[5,2],[4,2],[4,1],[3,1],[2,1],[2,0],[3,0],[4,0],[5,0]];
+const MAZE_WALL=[[0,4],[0,3],[0,2],[2,4],[2,5],[2,2],[4,4],[4,3],[3,2],[1,1],[1,2],[1,0],[0,0],[0,1]];
+function mazeHTML(G){
+  G.maze ||= {i:0, found:0}; const M=G.maze, can=canPlay(G), here=MAZE_PATH[M.i], next=MAZE_PATH[M.i+1], end=MAZE_PATH[MAZE_PATH.length-1];
+  const key=(x,y)=>x+","+y, walls=new Set(MAZE_WALL.map(w=>key(...w))), path=new Set(MAZE_PATH.map(w=>key(...w)));
+  let cells=""; for(let y=0;y<6;y++) for(let x=0;x<6;x++){ const k=key(x,y); const isHere=here[0]===x&&here[1]===y, isNext=next&&next[0]===x&&next[1]===y, isEnd=end[0]===x&&end[1]===y;
+    cells+=`<button class="mz ${walls.has(k)?"wall":""} ${path.has(k)&&MAZE_PATH.findIndex(p=>p[0]===x&&p[1]===y)<M.i?"trod":""} ${isNext?"next":""}" data-act="gmaze" data-v="${isNext?1:0}" ${can&&isNext?"":"disabled"} aria-label="${isNext?"Next step":"Maze"}">${isHere?"🧒":isEnd?"💎":walls.has(k)?"🌳":""}</button>`; }
+  return `<div class="mzw"><div class="mzg">${cells}</div><div class="brl-n">${M.i}/${MAZE_PATH.length-1} steps · ${M.found} treasures</div></div>`;
+}
+async function mazeStep(){
+  const G=gstate(); if(!canPlay(G)) return; const M=G.maze; if(M.i>=MAZE_PATH.length-1) return; takeBonus(G);
+  M.i++; snd("hop"); reveal(G); if(M.i>=MAZE_PATH.length-1) M.pending=true; renderMain();
+}
+async function mazeDone(){ const G=gstate(), M=G.maze; if(!M?.pending) return; M.pending=false; const st=giveSticker(); celebrate(`<div class="gfx-e">💎🎉</div><b>Treasure found!</b><span>Sticker: ${st}</span>`); M.i=0; M.found++; saveLive(); setTimeout(renderMain,2600); }
+
 
 /* ---- overlay view ---- */
 function itemAt(si){ return ITEMS[si]||{}; }
+/* Bridge hold: keep holding, the beads light up one by one (lock, lock, lock…), let go and the target word pops */
+let BRH={si:-1,lit:0,done:false,t:null};
+function bridgeInfo(si){ if(!OPT.bridge) return null; const k=ITEMS[si]?.key; if(k==null) return null; try{ return OPT.bridge(k)||null; }catch(e){ return null; } }
+function bridgeBeads(bi){ return bi.rep?Array(5).fill([bi.a,bi.pa]):[[bi.a,bi.pa],[bi.b,bi.pb],[bi.a+"‑"+bi.b,""]]; }
+function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,t:null}; }
+  const beads=bridgeBeads(bi), n=beads.length, all=BRH.lit>=n;
+  return `<div class="brh ${BRH.done?"done":""}">
+    <div class="brh-beads">${beads.map(([t,p],i)=>`<span class="bd ${i<BRH.lit?"on":""}">${p?`<i>${p}</i>`:""}<b>${esc(t)}</b></span>`).join("")}</div>
+    <div class="brh-goal ${BRH.done?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>
+    ${BRH.done?"":`<button class="brh-hold ${all?"ready":""}" id="brhHold" type="button">${all?`Let go and say <u>${esc(bi.t)}</u>!`:BRH.lit?"Keep holding…":`Hold me and say <u>${esc(bi.rep?bi.a:bi.a)}</u>`}</button>`}
+  </div>`; }
+function sayTxt(t){ if(OPT.say){ try{ OPT.say(t); }catch(err){} return; } try{ const u=new SpeechSynthesisUtterance(t); const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang==="en-AU")||vs.find(x=>/^en/.test(x.lang)); if(v) u.voice=v; u.lang=v?.lang||"en-AU"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(err){} }
+function brhRedraw(){ const G=gstate(); const host=ROOT&&ROOT.querySelector(".brh"); if(!host) return; const tmp=document.createElement("div"); tmp.innerHTML=bridgeHTML(G.revealed.si); host.replaceWith(tmp.firstElementChild); }
+function brhStart(e){ const b=e.target.closest&&e.target.closest("#brhHold"); if(!b) return; e.preventDefault(); const G=gstate(); const bi=bridgeInfo(G.revealed.si); if(!bi||BRH.done) return; const n=bridgeBeads(bi).length;
+  clearInterval(BRH.t); BRH.lit=1; BRH.holding=true; snd("pop"); brhRedraw(); BRH.t=setInterval(()=>{ if(BRH.lit<n){ BRH.lit++; snd("pop"); brhRedraw(); } },650); }
+function brhEnd(){ if(!BRH.holding) return; BRH.holding=false; clearInterval(BRH.t); const G=gstate(); const bi=bridgeInfo(G.revealed.si); if(!bi) return; const n=bridgeBeads(bi).length;
+  if(BRH.lit>=n){ BRH.done=true; brhRedraw(); snd("star"); sayTxt(bi.t); const g=ROOT&&ROOT.querySelector(".brh-goal"); if(g) confetti(g, g.clientWidth/2, g.clientHeight/2); }
+  else { BRH.lit=0; brhRedraw(); toast("Keep holding till they all light up!"); } }
 function sayCard(G){
   const si=G.revealed.si, it=itemAt(si), w=GOAL.stimuli[si]||"", kind=it.kind||"";
   const p=(kind==="silly"||kind==="sent")?"":picFor(w);
-  const lab=OPT.reading?(kind==="silly"?"👽 Alien word: read it":kind==="sent"?"⭐ The sentence: read it":"Read it aloud"):"Say it aloud";
+  const reps=G.type==="roll"&&G.roll?.reps>1?G.roll.reps:0;
+  const lab=OPT.reading?(kind==="silly"?"👽 Alien word: read it":kind==="sent"?"⭐ The sentence: read it":reps?`Read it ${reps} times`:"Read it aloud"):reps?`Say it ${reps} times`:"Say it aloud";
   const canHear=!OPT.reading||kind==="real";
   return `<div class="saycard"><div class="sc-in ${p?"":"nopic"} ${w.length>14?"long":""} ${kind}">
     <div class="sc-lab">${lab}</div>
     <div class="sc-wrow">${canHear?`<button class="sc-spk" data-act="gspeak" data-v="${esc(w)}" aria-label="Hear it">🔊</button>`:""}<span class="sc-word">${esc(w)}</span></div>
-    ${p?`<div class="sc-tile">${p}</div>`:""}
+    ${bridgeHTML(si)||(p?`<div class="sc-tile">${p}</div>`:"")}
     <div class="sc-foot"><button class="sc-skip" data-act="gcardskip">Skip</button><button class="sc-ok" data-act="fxhit" data-v="1">${OPT.reading?"✓ I read it":"✓ Said it"}</button></div>
   </div></div>`;
 }
@@ -501,13 +636,14 @@ function afterCard(G){
   if(G.type==="balloon"&&G.balloon?.pending) setTimeout(balloonDone,30);
   if(G.type==="stars"&&G.stars?.pending) setTimeout(starsDone,30);
   if(G.type==="barrel"&&G.barrel?.pending) setTimeout(barrelDone,30);
+  if(G.type==="pacer"&&G.pacer?.pending) setTimeout(pacerDone,30); if(G.type==="roll"&&G.roll?.pending) setTimeout(rollDone,30); if(G.type==="build"&&G.build?.pending) setTimeout(buildDone,30); if(G.type==="maze"&&G.maze?.pending) setTimeout(mazeDone,30);
 }
 async function onClick(e){
   const b=e.target.closest("[data-act]"); if(!b||!ROOT||!ROOT.contains(b)||b.disabled) return;
   const a=b.dataset.act, G=gstate();
-  if(a==="fxhit"){ const cur=fxCurrent(); if(!cur||!G.await) return; logTrial(cur.g,cur.si,true); snd("star"); G.await=false; G.bonus=true; G.tries=0;
+  if(a==="fxhit"){ const cur=fxCurrent(); if(!cur||!G.await) return; BRH.si=-1; logTrial(cur.g,cur.si,true); snd("star"); G.await=false; G.bonus=true; G.tries=0;
     phaseNote(cur.si); if(readDone(G,cur.si)){ setTimeout(finishReading,350); renderMain(); return; } fxPickNext(cur); afterCard(G); renderMain(); return; }
-  if(a==="gcardskip"){ G.await=false; G.tries=0; const cur=fxCurrent(); if(cur){ phaseNote(cur.si); if(readDone(G,cur.si)){ if(LV.log.length) setTimeout(finishReading,350); else { LV.cur={gid:"w",si:0}; } renderMain(); return; } fxPickNext(cur); } afterCard(G); renderMain(); return; }
+  if(a==="gcardskip"){ BRH.si=-1; G.await=false; G.tries=0; const cur=fxCurrent(); if(cur){ phaseNote(cur.si); if(readDone(G,cur.si)){ if(LV.log.length) setTimeout(finishReading,350); else { LV.cur={gid:"w",si:0}; } renderMain(); return; } fxPickNext(cur); } afterCard(G); renderMain(); return; }
   if(a==="sgkagain"){ restart(); return; }
   if(a==="sgkmore"){ restart(); S.fx.picker=true; renderMain(); return; }
   if(a==="sgknext"){ let n=null; try{ n=OPT.onNext&&OPT.onNext(); }catch(err){} if(n) restart(n); else toast("That's the last level!"); return; }
@@ -535,12 +671,21 @@ async function onClick(e){
   if(a==="gcatch"){ catchFish(+b.dataset.v,b); return; }
   if(a==="gsmode"){ G.smoothie.mode=b.dataset.v; G.smoothie.added=[]; renderMain(); return; }
   if(a==="gsadd"){ smoothieAdd(b.dataset.v,b); return; }
+  if(a==="gsmclose"){ G.smoothie.show=null; G.smoothie.galOpen=false; renderMain(); return; }
+  if(a==="gsmgal"){ G.smoothie.show=null; G.smoothie.galOpen=true; renderMain(); return; }
+  if(a==="gsmgalx"){ G.smoothie.galOpen=false; renderMain(); return; }
+  if(a==="gsmpick"){ const d=(S.client.drinks||[])[+b.dataset.v]; if(d){ G.smoothie.galOpen=false; G.smoothie.show=d; G.smoothie.showNew=false; renderMain(); sayTxt(d.name); } return; }
   if(a==="gslot"){ barrelSlot(+b.dataset.v); return; }
   if(a==="gsword"){ if(G.barrel){ G.barrel.pick=+b.dataset.v; snd("tick"); renderMain(); } return; }
   if(a==="gbonk"){ moleBonk(b); return; }
   if(a==="gttt"){ tttMove(+b.dataset.v); return; }
   if(a==="gpaint"){ paintPart(+b.dataset.v); return; }
   if(a==="gpcol"){ G.paint.col=+b.dataset.v; renderMain(); return; }
+  if(a==="gpace"){ pacerTap(+b.dataset.v); return; }
+  if(a==="gorll"){ b.disabled=true; rollSay(); return; }
+  if(a==="gbuild"){ buildAdd(); return; }
+  if(a==="gbpick"){ G.build ||= {k:0,n:0,made:0}; if(G.build.n) return; G.build.k=+b.dataset.v; snd("tick"); renderMain(); return; }
+  if(a==="gmaze"){ if(b.dataset.v==="1") mazeStep(); return; }
 }
 function onKey(e){ if(e.key==="Escape" && ROOT){ if(OPT.reading){ close(); return; } if(VIEW!=="review"){ VIEW="review"; renderMain(); } } }
 function close(){ if(!ROOT) return; document.removeEventListener("click",onClick); document.removeEventListener("keydown",onKey); ROOT.remove(); ROOT=null; document.documentElement.style.overflow=""; try{ OPT.onClose&&OPT.onClose(); }catch(e){} }
@@ -548,17 +693,17 @@ function open(opt){
   if(ROOT) close();
   OPT=opt||{}; setItems(OPT.items);
   const st=OPT.state||{};
-  S.client={goals:[GOAL], stickers:(st.stickers||[]).slice(), tank:(st.tank||[]).slice(), sound:!!st.sound, lastGame:st.lastGame||"", name:OPT.who||""};
+  S.client={goals:[GOAL], stickers:(st.stickers||[]).slice(), tank:(st.tank||[]).slice(), drinks:(st.drinks||[]).slice(), sound:!!st.sound, lastGame:st.lastGame||"", name:OPT.who||""};
   NEWSTK=[]; VIEW="game"; S.fx.picker=false; S.fx.stk=false; S.fx.busy=false;
   LV={cur:{gid:"w",si:0}, log:[], hist:[], mod: st.pics===false?[]:["picture"], game:null, t0:Date.now()};
   const okType=t=>GAMES.some(g=>g.id===t);
   LV.game=freshGame(okType(OPT.game)?OPT.game:okType(st.lastGame)?st.lastGame:"");
-  ROOT=document.createElement("div"); ROOT.className="sgk"; ROOT.setAttribute("role","dialog"); ROOT.setAttribute("aria-modal","true"); ROOT.setAttribute("aria-label","Speech games");
+  ROOT=document.createElement("div"); ROOT.addEventListener("pointerdown",brhStart); ROOT.addEventListener("pointerup",brhEnd); ROOT.addEventListener("pointercancel",brhEnd); ROOT.addEventListener("pointerleave",brhEnd); ROOT.addEventListener("contextmenu",e=>{ if(e.target.closest&&e.target.closest("#brhHold")) e.preventDefault(); }); ROOT.className="sgk"; ROOT.setAttribute("role","dialog"); ROOT.setAttribute("aria-modal","true"); ROOT.setAttribute("aria-label","Speech games");
   document.body.appendChild(ROOT); document.documentElement.style.overflow="hidden";
   document.addEventListener("click",onClick); document.addEventListener("keydown",onKey);
   renderMain();
 }
-for(let i=GAMES.length-1;i>=0;i--) if(GAMES[i].id==="road") GAMES.splice(i,1);
+for(let i=GAMES.length-1;i>=0;i--) if(GAMES[i].id==="road"||GAMES[i].id==="bridge") GAMES.splice(i,1);
 window.SpeechGames={open, close, games:()=>GAMES.map(g=>({id:g.id,name:g.name,art:g.art,bg:g.bg,col:g.col,how:g.how}))};
 
 })();

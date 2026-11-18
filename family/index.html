@@ -112,7 +112,7 @@ const V={k:null,p:'i',deck:[],i:0,res:[],fin:false,pop:-1,share:false,vs:{},br:[
 const HW='_hw';
 function readHW(raw){try{const b=raw.replace(/-/g,'+').replace(/_/g,'/');const o=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0))));
   if(!o||!Array.isArray(o.w)||!o.w.length)return false;const t=String(o.t||'Homework').slice(0,60);const ws=[];V.vs={};V.br=[];
-  o.w.slice(0,40).forEach(x=>{const w=String(x[0]||'').slice(0,40);if(!w)return;ws.push(w);if(x[1])D.pics[w]=String(x[1]).slice(0,16);if(x[2])V.vs[w]=String(x[2]).slice(0,40);if(x[3])V.br.push({w,t:String(x[3]).slice(0,60),p:String(x[4]||'').slice(0,16),tp:String(x[1]||'').slice(0,16)})});
+  o.w.slice(0,40).forEach(x=>{const w=String(x[0]||'').slice(0,40);if(!w)return;ws.push(w);if(x[1])D.pics[w]=String(x[1]).slice(0,16);if(x[2])V.vs[w]=String(x[2]).slice(0,40);if(x[3])V.br.push({w,t:String(x[3]).slice(0,60),p:String(x[4]||'').slice(0,24),tp:String(x[1]||'').slice(0,16)})});
   if(!ws.length)return false;D.words[HW]={[t]:ws};if(o.k&&D.tips[o.k])D.tips[HW]=D.tips[o.k];else delete D.tips[HW];
   V.k=HW;V.p=t;if(o.n){ST.name=String(o.n).slice(0,20);save()}return true}catch(e){return false}}
 function readHash(){if(location.hash.startsWith('#h=')){if(readHW(location.hash.slice(3)))return}
@@ -141,7 +141,7 @@ function render(){
   if(!V.k){h+=`<div class="card" style="padding:40px 20px"><div class="pic">👆</div><p style="font-size:1.15rem;margin:8px 0 0">Pick the sound your speech pathologist is working on.</p></div>`}
   else{
     const hw=V.k===HW;
-    if(hw&&V.br.length)h+=`<div class="warm"><h2>Warm-up first</h2><p>Say the two parts, then push them together. Tap one to hear it.</p><div class="wlist">${V.br.map((x,i)=>`<button class="wcard" data-a="wsay" data-i="${i}"><span class="wp">${esc(x.p)}</span><span class="wt">${esc(x.t)}</span><span class="wp big">${esc(x.tp)}</span></button>`).join('')}</div></div>`;
+    if(hw&&V.br.length)h+=`<div class="warm"><h2>Warm-up first</h2><p>Say the two parts, then push them together. Tap one to hear it.</p><div class="wlist">${V.br.map((x,i)=>`<button class="wcard" data-a="wsay" data-i="${i}"><span class="wp">${esc(x.p.replace("|",""))}</span><span class="wt">${esc(x.t)}</span><span class="wp big">${esc(x.tp)}</span></button>`).join('')}</div></div>`;
     if(hw)h+=chartHTML()+`<div class="play"><button class="bigplay" data-a="games"><i>🎮</i>Play the games</button><button class="btn" data-a="fcT">${V.fc?'Hide flashcards':'🃏 Flashcards instead'}</button></div>`;
     h+=`<div class="main ${hw&&!V.fc?'nofc':''}">`;
     if(tip)h+=`<div class="tip"><h2>Grown-up tip</h2><p>This is the <b>${esc(tip.nm.toLowerCase())}</b>. Try saying: <b>“${esc(tip.say)}”</b></p><p>${esc(tip.show)}</p>${tip.br&&tip.br.length?`<p>Warm-up phrases that make it easier:</p><div class="try">${tip.br.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}<p class="src" style="margin-top:8px">Cues adapted from Bowen (2015), Table 6.5.</p></div>`;
@@ -201,7 +201,7 @@ function chartHTML(){const s=daysDone(),ws=weekStart(),t=today();let n=0;const c
   return `<div class="chart"><div class="chd"><b>${ST.name?esc(ST.name)+'’s sticker chart':'Sticker chart'}</b><span>${st>1?'🔥 '+st+' days in a row · ':''}⭐ ${weekStamps()} star${weekStamps()===1?"":"s"}</span></div><div class="stks">${cells}<div class="stk tro ${n>=goal?'on':''}"><i>🏆</i><small>${Math.min(n,goal)}/${goal}</small></div></div><p>${msg}</p></div>`}
 function openGames(){if(!window.SpeechGames){toast('Games are still loading.');return}
     const ws=(D.words[V.k]||{})[V.p]||[];const ip=(D.sounds.find(s=>s[0]===V.k)||[])[1];
-    SpeechGames.open({items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:V.k===HW?V.p:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
+    SpeechGames.open({bridge:k=>{const x=V.br.find(q=>q.w===k);if(!x)return null;const [pa,pb]=(x.p+'|').split('|');const r=x.t.includes('→');const m=r?x.t.split(' → '):x.t.split(/ \+ | = /);return r?{a:m[0].split('-')[0],b:'',pa,pb:'',t:x.w,tp:x.tp,rep:true}:{a:m[0],b:m[1],pa,pb,t:x.w,tp:x.tp}},items:ws.map(w=>({key:w,text:w})),pic:w=>D.pics[w]||'',who:ST.name.split(' ')[0],title:V.k===HW?V.p:(isCl(V.k)?fl(V.k):'"'+fl(V.k)+'" words'),state:ST.games||{},
       onSave:st=>{ST.games=st;save()},
       onFinish:res=>{markDay();(res||[]).forEach(r=>ST.log.push({d:today(),k:V.k,p:V.p,w:r.key,r:r.k==='clear'?'b':r.k==='near'?'y':'r'}));save();render()}})}
 /* ---------- events ---------- */
