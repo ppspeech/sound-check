@@ -545,7 +545,7 @@ let BRH={si:-1,lit:0,done:false,t:null};
 function bridgeInfo(si){ if(!OPT.bridge) return null; const k=ITEMS[si]?.key; if(k==null) return null; try{ return OPT.bridge(k)||null; }catch(e){ return null; } }
 function bridgeBeads(bi){ return bi.rep?Array(5).fill([bi.a,bi.pa]):[[bi.a,bi.pa],[bi.b,bi.pb],[bi.a+"‑"+bi.b,""]]; }
 let BRSEC=3; try{ const v=+localStorage.getItem("sgk-brsec2"); if(v>=1&&v<=12) BRSEC=v; }catch(e){}
-function brhHint(bi){ if(bi.hint) return bi.hint; const t=String(bi.t||""); const m=t.match(/^([^aeiouy\s])([^aeiouy\s].*)$/i); return m?`${m[1]} + ${m[2]}`:""; }
+function brhHint(bi){ if(bi.hint) return bi.hint; const t=String(bi.t||""); const m=t.match(/^([^aeiouy\s]{2,})([aeiouy].*)$/i); return m?`${m[1]} + ${m[2]}`:""; }
 function brhDur(bi,i){ return bi.rep?Math.max(700,BRSEC*400):(i===1?1200:BRSEC*1000*(i===2?2:1)); }
 function brhLabel(bi,n){ return BRH.ready?`Great! Let go`:BRH.goal?(brhHint(bi)?`Hold the /${esc(brhHint(bi).split(" + ")[0])}/… then say <u>${esc(bi.t)}</u>`:`Say <u>${esc(bi.t)}</u>… keep holding`):BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
 function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,goal:false,t:null}; }
