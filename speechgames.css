@@ -624,3 +624,7 @@
 @media (min-width:700px){.sgk .sms-card.show{width:min(760px,100%);flex-direction:row;align-items:center;gap:20px;text-align:left}.sgk .sms-card.show .sms-l{flex:0 0 42%;text-align:center}.sgk .sms-card.show .sms-btns{justify-content:flex-end;width:100%}}
 .sgk .smshow.new .sms-r{visibility:hidden}
 .sgk .sc-in:has(.brh) .sc-wrow{display:none}
+.sgk .brh-hold{position:relative;overflow:hidden}
+.sgk .brh-hold .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(255,255,255,.55);pointer-events:none}
+.sgk .brh-hold .lab{position:relative;pointer-events:none}
+.sgk .brh .bd.now{outline:3px solid #ff8a00;outline-offset:2px;transform:translateY(-3px) scale(1.08)}
