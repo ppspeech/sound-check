@@ -544,15 +544,15 @@ function itemAt(si){ return ITEMS[si]||{}; }
 let BRH={si:-1,lit:0,done:false,t:null};
 function bridgeInfo(si){ if(!OPT.bridge) return null; const k=ITEMS[si]?.key; if(k==null) return null; try{ return OPT.bridge(k)||null; }catch(e){ return null; } }
 function bridgeBeads(bi){ return bi.rep?Array(5).fill([bi.a,bi.pa]):[[bi.a,bi.pa],[bi.b,bi.pb],[bi.a+"‑"+bi.b,""]]; }
-let BRSLOW=true; try{ BRSLOW=localStorage.getItem("sgk-brfast")!=="1"; }catch(e){}
-function brhDur(bi){ return bi.rep?(BRSLOW?1100:750):(BRSLOW?3000:1700); }
+let BRSEC=5; try{ const v=+localStorage.getItem("sgk-brsec"); if(v>=1&&v<=12) BRSEC=v; }catch(e){}
+function brhDur(bi){ return bi.rep?Math.max(700,BRSEC*400):BRSEC*1000; }
 function brhLabel(bi,n){ return BRH.ready?`Let go and say <u>${esc(bi.t)}</u>!`:BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
 function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,t:null}; }
   const beads=bridgeBeads(bi), n=beads.length;
   return `<div class="brh ${BRH.done?"done":""}">
     <div class="brh-beads">${beads.map(([t,p],i)=>`<span class="bd ${i<BRH.lit?"on":""} ${i===BRH.lit-1&&!BRH.ready&&!BRH.done?"now":""}">${p?`<i>${p}</i>`:""}<b>${esc(t)}</b></span>`).join("")}</div>
     <div class="brh-goal ${BRH.done?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>
-    ${BRH.done?"":`<button class="brh-hold ${BRH.ready?"ready":""}" id="brhHold" type="button"><i class="fill"></i><span class="lab">${brhLabel(bi,n)}</span></button><button type="button" class="brh-spd" data-act="gbrspd">${BRSLOW?"🐢 Slow":"🐇 Quick"}<small>tap to change</small></button>`}
+    ${BRH.done?"":`<button class="brh-hold ${BRH.ready?"ready":""}" id="brhHold" type="button"><i class="fill"></i><span class="lab">${brhLabel(bi,n)}</span></button><div class="brh-spd"><button type="button" data-act="gbrspd" data-v="-1" aria-label="Faster">−</button><span><b>${BRSEC} seconds</b> for each part</span><button type="button" data-act="gbrspd" data-v="1" aria-label="Slower">+</button></div>`}
   </div>`; }
 function sayTxt(t){ if(OPT.say){ try{ OPT.say(t); }catch(err){} return; } try{ const u=new SpeechSynthesisUtterance(t); const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang==="en-AU")||vs.find(x=>/^en/.test(x.lang)); if(v) u.voice=v; u.lang=v?.lang||"en-AU"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(err){} }
 function brhRedraw(){ const G=gstate(); const host=ROOT&&ROOT.querySelector(".brh"); if(!host) return; const bi=bridgeInfo(G.revealed.si);
@@ -677,7 +677,7 @@ async function onClick(e){
   if(a==="gstack"){ stackLayer(b.dataset.v); return; }
   if(a==="gcatch"){ catchFish(+b.dataset.v,b); return; }
   if(a==="gsmode"){ G.smoothie.mode=b.dataset.v; G.smoothie.added=[]; renderMain(); return; }
-  if(a==="gbrspd"){ BRSLOW=!BRSLOW; try{ localStorage.setItem("sgk-brfast",BRSLOW?"0":"1"); }catch(e){} BRH.lit=0; BRH.ready=false; brhRedraw(); return; }
+  if(a==="gbrspd"){ BRSEC=Math.max(1,Math.min(12,BRSEC+(+b.dataset.v))); try{ localStorage.setItem("sgk-brsec",BRSEC); }catch(e){} BRH.lit=0; BRH.ready=false; brhRedraw(); return; }
   if(a==="gsadd"){ smoothieAdd(b.dataset.v,b); return; }
   if(a==="gsmclose"){ G.smoothie.show=null; G.smoothie.galOpen=false; renderMain(); return; }
   if(a==="gsmgal"){ G.smoothie.show=null; G.smoothie.galOpen=true; renderMain(); return; }
