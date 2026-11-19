@@ -630,3 +630,5 @@
 .sgk .brh .bd.now{outline:3px solid #ff8a00;outline-offset:2px;transform:translateY(-3px) scale(1.08)}
 .sgk .brh-spd{font:inherit;font-weight:800;font-size:14px;border:2px solid #e7e0d4;background:#fff;border-radius:12px;padding:6px 12px;min-height:44px;cursor:pointer;display:flex;gap:8px;align-items:center}.sgk .brh-spd small{font-weight:600;color:#9a9087}
 .sgk .brh-spd{border:0;background:transparent;padding:0;gap:10px;font-size:15px;font-weight:600;color:#6b5f55;cursor:default}.sgk .brh-spd b{color:#3b3530}.sgk .brh-spd button{font:inherit;font-weight:800;font-size:22px;width:44px;height:44px;border-radius:50%;border:2px solid #e7e0d4;background:#fff;cursor:pointer}
+.sgk .brh-goal{gap:2px}.sgk .brh-hint{font-size:17px;font-weight:800;color:#c96f00;background:#fff4c2;border-radius:999px;padding:2px 12px;margin-top:2px}.sgk .brh-goal:not(.pop) .brh-hint{filter:none}
+.sgk .brh-hint{margin-top:-6px}

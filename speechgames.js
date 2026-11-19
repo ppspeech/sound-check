@@ -545,13 +545,14 @@ let BRH={si:-1,lit:0,done:false,t:null};
 function bridgeInfo(si){ if(!OPT.bridge) return null; const k=ITEMS[si]?.key; if(k==null) return null; try{ return OPT.bridge(k)||null; }catch(e){ return null; } }
 function bridgeBeads(bi){ return bi.rep?Array(5).fill([bi.a,bi.pa]):[[bi.a,bi.pa],[bi.b,bi.pb],[bi.a+"‑"+bi.b,""]]; }
 let BRSEC=3; try{ const v=+localStorage.getItem("sgk-brsec2"); if(v>=1&&v<=12) BRSEC=v; }catch(e){}
+function brhHint(bi){ if(bi.hint) return bi.hint; const t=String(bi.t||""); const m=t.match(/^([^aeiouy\s])([^aeiouy\s].*)$/i); return m?`${m[1]} + ${m[2]}`:""; }
 function brhDur(bi,i){ return bi.rep?Math.max(700,BRSEC*400):BRSEC*1000*(i===2?2:1); }
-function brhLabel(bi,n){ return BRH.ready?`Great! Let go`:BRH.goal?`Say <u>${esc(bi.t)}</u>… keep holding`:BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
+function brhLabel(bi,n){ return BRH.ready?`Great! Let go`:BRH.goal?`${brhHint(bi)?esc(brhHint(bi))+" = ":""}<u>${esc(bi.t)}</u>… keep holding`:BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
 function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,goal:false,t:null}; }
   const beads=bridgeBeads(bi), n=beads.length;
   return `<div class="brh ${BRH.done?"done":""}">
     <div class="brh-beads">${beads.map(([t,p],i)=>`<span class="bd ${i<BRH.lit?"on":""} ${i===BRH.lit-1&&!BRH.ready&&!BRH.goal&&!BRH.done?"now":""}">${p?`<i>${p}</i>`:""}<b>${esc(t)}</b></span>`).join("")}</div>
-    <div class="brh-goal ${BRH.done||BRH.goal?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>
+    <div class="brh-goal ${BRH.done||BRH.goal?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>${brhHint(bi)?`<span class="brh-hint">${esc(brhHint(bi))} = ${esc(bi.t)}</span>`:""}
     ${BRH.done?"":`<button class="brh-hold ${BRH.ready?"ready":""}" id="brhHold" type="button"><i class="fill"></i><span class="lab">${brhLabel(bi,n)}</span></button><div class="brh-spd"><button type="button" data-act="gbrspd" data-v="-1" aria-label="Faster">−</button><span><b>${BRSEC} seconds</b> for each word</span><button type="button" data-act="gbrspd" data-v="1" aria-label="Slower">+</button></div>`}
   </div>`; }
 function sayTxt(t){ if(OPT.say){ try{ OPT.say(t); }catch(err){} return; } try{ const u=new SpeechSynthesisUtterance(t); const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang==="en-AU")||vs.find(x=>/^en/.test(x.lang)); if(v) u.voice=v; u.lang=v?.lang||"en-AU"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(err){} }
