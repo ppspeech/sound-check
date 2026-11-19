@@ -546,27 +546,27 @@ function bridgeInfo(si){ if(!OPT.bridge) return null; const k=ITEMS[si]?.key; if
 function bridgeBeads(bi){ return bi.rep?Array(5).fill([bi.a,bi.pa]):[[bi.a,bi.pa],[bi.b,bi.pb],[bi.a+"‑"+bi.b,""]]; }
 let BRSEC=3; try{ const v=+localStorage.getItem("sgk-brsec2"); if(v>=1&&v<=12) BRSEC=v; }catch(e){}
 function brhDur(bi,i){ return bi.rep?Math.max(700,BRSEC*400):BRSEC*1000*(i===2?2:1); }
-function brhLabel(bi,n){ return BRH.ready?`Let go and say <u>${esc(bi.t)}</u>!`:BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
-function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,t:null}; }
+function brhLabel(bi,n){ return BRH.ready?`Great! Let go`:BRH.goal?`Say <u>${esc(bi.t)}</u>… keep holding`:BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
+function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,goal:false,t:null}; }
   const beads=bridgeBeads(bi), n=beads.length;
   return `<div class="brh ${BRH.done?"done":""}">
-    <div class="brh-beads">${beads.map(([t,p],i)=>`<span class="bd ${i<BRH.lit?"on":""} ${i===BRH.lit-1&&!BRH.ready&&!BRH.done?"now":""}">${p?`<i>${p}</i>`:""}<b>${esc(t)}</b></span>`).join("")}</div>
-    <div class="brh-goal ${BRH.done?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>
+    <div class="brh-beads">${beads.map(([t,p],i)=>`<span class="bd ${i<BRH.lit?"on":""} ${i===BRH.lit-1&&!BRH.ready&&!BRH.goal&&!BRH.done?"now":""}">${p?`<i>${p}</i>`:""}<b>${esc(t)}</b></span>`).join("")}</div>
+    <div class="brh-goal ${BRH.done||BRH.goal?"pop":""}"><i>${bi.tp||""}</i><b>${esc(bi.t)}</b></div>
     ${BRH.done?"":`<button class="brh-hold ${BRH.ready?"ready":""}" id="brhHold" type="button"><i class="fill"></i><span class="lab">${brhLabel(bi,n)}</span></button><div class="brh-spd"><button type="button" data-act="gbrspd" data-v="-1" aria-label="Faster">−</button><span><b>${BRSEC} seconds</b> for each word</span><button type="button" data-act="gbrspd" data-v="1" aria-label="Slower">+</button></div>`}
   </div>`; }
 function sayTxt(t){ if(OPT.say){ try{ OPT.say(t); }catch(err){} return; } try{ const u=new SpeechSynthesisUtterance(t); const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang==="en-AU")||vs.find(x=>/^en/.test(x.lang)); if(v) u.voice=v; u.lang=v?.lang||"en-AU"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(err){} }
 function brhRedraw(){ const G=gstate(); const host=ROOT&&ROOT.querySelector(".brh"); if(!host) return; const bi=bridgeInfo(G.revealed.si);
-  if(BRH.holding&&bi){ const n=bridgeBeads(bi).length; host.querySelectorAll(".bd").forEach((e,i)=>{ e.classList.toggle("on",i<BRH.lit); e.classList.toggle("now",i===BRH.lit-1&&!BRH.ready); }); const btn=host.querySelector("#brhHold"); if(btn){ btn.classList.toggle("ready",!!BRH.ready); btn.querySelector(".lab").innerHTML=brhLabel(bi,n); } return; }
+  if(BRH.holding&&bi){ const n=bridgeBeads(bi).length; host.querySelectorAll(".bd").forEach((e,i)=>{ e.classList.toggle("on",i<BRH.lit); e.classList.toggle("now",i===BRH.lit-1&&!BRH.ready&&!BRH.goal); }); const gl=host.querySelector(".brh-goal"); if(gl) gl.classList.toggle("pop",!!BRH.goal); const btn=host.querySelector("#brhHold"); if(btn){ btn.classList.toggle("ready",!!BRH.ready); btn.querySelector(".lab").innerHTML=brhLabel(bi,n); } return; }
   const tmp=document.createElement("div"); tmp.innerHTML=bridgeHTML(G.revealed.si); host.replaceWith(tmp.firstElementChild); }
 function brhStart(e){ const b=e.target.closest&&e.target.closest("#brhHold"); if(!b) return; e.preventDefault(); const G=gstate(); const bi=bridgeInfo(G.revealed.si); if(!bi||BRH.done) return; const n=bridgeBeads(bi).length;
-  clearTimeout(BRH.t); BRH.ready=false; BRH.holding=true;
-  const step=k=>{ if(!BRH.holding) return; if(k>n){ BRH.ready=true; snd("star"); brhRedraw(); return; } BRH.lit=k; snd("pop"); brhRedraw(); const d=brhDur(bi,k-1);
+  clearTimeout(BRH.t); BRH.ready=false; BRH.goal=false; BRH.holding=true;
+  const step=k=>{ if(!BRH.holding) return; if(k>n+1){ BRH.ready=true; snd("star"); brhRedraw(); return; } if(k===n+1){ BRH.goal=true; snd("star"); } else { BRH.lit=k; snd("pop"); } brhRedraw(); const d=k===n+1?BRSEC*1000:brhDur(bi,k-1);
     const f=ROOT.querySelector("#brhHold .fill"); if(f){ f.style.transition="none"; f.style.width="0%"; void f.offsetWidth; f.style.transition=`width ${d}ms linear`; f.style.width="100%"; }
     BRH.t=setTimeout(()=>step(k+1),d); };
   step(1); }
 function brhEnd(){ if(!BRH.holding) return; clearTimeout(BRH.t); const G=gstate(); const bi=bridgeInfo(G.revealed.si); BRH.holding=false; if(!bi) return;
   if(BRH.ready){ BRH.done=true; brhRedraw(); snd("star"); sayTxt(bi.t); const g=ROOT&&ROOT.querySelector(".brh-goal"); if(g) confetti(g, g.clientWidth/2, g.clientHeight/2); }
-  else { BRH.lit=0; brhRedraw(); toast("Keep holding till the bar is full!"); } }
+  else { BRH.lit=0; BRH.goal=false; brhRedraw(); toast("Keep holding till the bar is full!"); } }
 function sayCard(G){
   const si=G.revealed.si, it=itemAt(si), w=GOAL.stimuli[si]||"", kind=it.kind||"";
   const p=(kind==="silly"||kind==="sent")?"":picFor(w);
@@ -679,7 +679,7 @@ async function onClick(e){
   if(a==="gstack"){ stackLayer(b.dataset.v); return; }
   if(a==="gcatch"){ catchFish(+b.dataset.v,b); return; }
   if(a==="gsmode"){ G.smoothie.mode=b.dataset.v; G.smoothie.added=[]; renderMain(); return; }
-  if(a==="gbrspd"){ BRSEC=Math.max(1,Math.min(12,BRSEC+(+b.dataset.v))); try{ localStorage.setItem("sgk-brsec2",BRSEC); }catch(e){} BRH.lit=0; BRH.ready=false; brhRedraw(); return; }
+  if(a==="gbrspd"){ BRSEC=Math.max(1,Math.min(12,BRSEC+(+b.dataset.v))); try{ localStorage.setItem("sgk-brsec2",BRSEC); }catch(e){} BRH.lit=0; BRH.ready=false; BRH.goal=false; brhRedraw(); return; }
   if(a==="gsadd"){ smoothieAdd(b.dataset.v,b); return; }
   if(a==="gsmclose"){ G.smoothie.show=null; G.smoothie.galOpen=false; renderMain(); return; }
   if(a==="gsmgal"){ G.smoothie.show=null; G.smoothie.galOpen=true; renderMain(); return; }
