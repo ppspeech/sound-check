@@ -548,7 +548,7 @@ let BRSEC=3; try{ const v=+localStorage.getItem("sgk-brsec2"); if(v>=1&&v<=12) B
 function brhHint(bi){ if(bi.hint) return bi.hint; const t=String(bi.t||""); const m=t.match(/^([^aeiouy\s]{2,})([aeiouy].*)$/i); return m?`${m[1]} + ${m[2]}`:""; }
 function brhJoinSegs(bi){ const m=String(bi.b||"").match(/^([^aeiouy\s]*)(.*)$/i); return [bi.a,...m[1],m[2]].filter(Boolean); }
 function brhRow(cls,segs){ const L=Math.max(1,segs.length-1),v=i=>`--dl:calc(var(--d)*${i}/${L});--seg:calc(var(--d)/${L})`; return `<div class="brh-str ${cls}" style="--d:${BRSEC}s">`+segs.map((c,i)=>i===segs.length-1?`<b class="s2">${esc(c)}</b>`:`<b class="${i?"sx":"s1"}" style="${v(i)}">${esc(c)}</b><i class="ln" style="${v(i)}"><i></i></i>`).join("")+`</div>`; }
-function brhDur(bi,i){ return bi.rep?Math.max(700,BRSEC*400):(i===1?1200:BRSEC*1000*(i===2?2:1)); }
+function brhDur(bi,i){ return bi.rep?Math.max(700,BRSEC*400):(i===1?1200:BRSEC*1000); }
 function brhLabel(bi,n){ return BRH.ready?`Great! Let go`:BRH.goal?(brhHint(bi)?`Stretch it: ${[...brhHint(bi).split(" + ")[0]].map(esc).join("… ")}… <u>${esc(brhHint(bi).split(" + ")[1])}</u>`:`Say <u>${esc(bi.t)}</u>… keep holding`):BRH.lit?`Say <u>${esc(bridgeBeads(bi)[Math.min(BRH.lit,n)-1][0])}</u>… keep holding`:`Hold me and say <u>${esc(bi.a)}</u>`; }
 function bridgeHTML(si){ const bi=bridgeInfo(si); if(!bi) return ""; if(BRH.si!==si){ clearInterval(BRH.t); BRH={si,lit:0,done:false,ready:false,goal:false,t:null}; }
   const beads=bridgeBeads(bi), n=beads.length;

@@ -1,5 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.qsrow.qs-nt>.num,.qsrow.qs-nt>.w,.qsrow.qs-nt>.segs,.qsrow.qs-nt>.cc,.qsrow.qs-nt .ipa{opacity:.38}.qsrow.qs-nt .segs{pointer-events:none}.nt-b[aria-pressed=true]{color:var(--accent)}
 .qsp .marks .nt.on{background:#6b6259;color:#fff;border-color:#6b6259}
+.qss{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}.qss-b{border-radius:10px;padding:10px 12px;font-size:.9rem;line-height:1.45}.qss-b.wide{grid-column:1/-1}.qss-b b{display:block;margin-bottom:4px}.qss-b ul{margin:0;padding-left:18px}.qss-b li{margin:2px 0}
 </style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -4963,9 +4964,37 @@ function vowelLegend(vinv){
   </tbody></table></div><p class="hint" style="margin:8px 0 0">Australian English (non-rhotic) vowels using Cox &amp; Palethorpe’s HCE symbols. Placement is approximate and for planning.</p>`;
 }
 
+
+/* plain-language Quick Screener summary for the Sound profile */
+function qsSummary(c){const q=latestQS(c);if(!q)return null;const m=monthsOf(c),R=qsCalc(q),inv=qsInv(q,R),EX=errExamples(q),PP=presentProcs(c);
+  const pex={};QSP.forEach(p=>['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(isNT(q,n)||!tickState(q,p.k,part,n).on)return;const key=p.map?p.map[n]:(p.to||p.k),it=QS.find(x=>x[0]===n);(pex[key]=pex[key]||[]).push(`${it[1]} → [${(q.tx||{})[n]||autoTx(q,n,it[2].split(' '))}]`)})));
+  const sEx=k=>{const e=(EX[k]||[])[0];return e?` (${e.w} → [${e.tx}])`:''};
+  const errK=Object.keys(inv).filter(k=>['err','stim','inc'].includes(inv[k].st)&&BAND[k]!=null).sort((a,b)=>BAND[a]-BAND[b]||(R.cons[a].ok/R.cons[a].t)-(R.cons[b].ok/R.cons[b].t));
+  const sTxt=k=>`/${ipaOf(k)}/ ${inv[k].st==='inc'?'inconsistent':'in error'}, ${R.cons[k].ok}/${R.cons[k].t} correct${sEx(k)}`;
+  const late=m==null?[]:errK.filter(k=>m>=BAND[k]+12),dev=m==null?[]:errK.filter(k=>m<BAND[k]+12);
+  const onP=PROC.filter(p=>PP[p.k].on),atP=onP.filter(p=>p.atyp),dueP=m==null?[]:onP.filter(p=>!p.atyp&&m>=p.age),okP=m==null?onP.filter(p=>!p.atyp):onP.filter(p=>!p.atyp&&m<p.age);
+  const pTxt=p=>`${p.label}${PP[p.k].hits?' '+PP[p.k].hits:''}${pex[p.k]?' ('+pex[p.k][0]+')':''}`;
+  const first=[...atP.map(p=>`${p.label}: not a typical pattern at any age, so look at this first`),...dueP.map(p=>`${p.label}: most children have stopped this by ${fmtM(p.age)}`),...late.slice().sort((a,b)=>((inv[b].st==='stim')-(inv[a].st==='stim'))).map(k=>`/${ipaOf(k)}/: expected by ${fmtM(BAND[k]+12)}${inv[k].st==='stim'?', and they can copy it, so it’s a good place to start':''}`)].slice(0,3);
+  const B=[];
+  B.push({k:'first',t:'🎯 Work on first',items:first.length?first:[m==null?'Add a date of birth to see what’s behind for age':'Nothing urgent. Everything in error is still within the usual range for this age']});
+  if(m==null){if(errK.length)B.push({k:'late',t:'Sounds in error',items:errK.map(sTxt)})}
+  else{B.push({k:'late',t:'⏰ Behind for age',items:[...late.map(k=>sTxt(k)+`. Expected by ${fmtM(BAND[k]+12)}`),...dueP.map(p=>pTxt(p)+`. Usually gone by ${fmtM(p.age)}`)]});
+    B.push({k:'dev',t:'🌱 Still developing (fine for age)',items:[...dev.map(k=>sTxt(k)+`. Many children are still learning it until ${fmtM(BAND[k]+12)}`),...okP.map(p=>pTxt(p)+`. Common until about ${fmtM(p.age)}`)]})}
+  B.push({k:'atyp',t:'🔎 Unusual patterns',items:atP.map(p=>pTxt(p)+'. Not typical at any age')});
+  const ok=Object.keys(inv).filter(k=>inv[k].st==='ok'),vbad=Object.keys(R.vow).filter(v=>R.vow[v].ok<R.vow[v].t);
+  B.push({k:'ok',t:'✅ Got these',items:[ok.length?ok.map(k=>'/'+ipaOf(k)+'/').join(' '):'No consonants fully correct yet',vbad.length?`Vowels: ${R.vok}/${R.vt} correct (check ${vbad.map(v=>'/'+v+'/').join(' ')})`:'All vowels correct']});
+  const pats=onP.map(p=>`${p.label}${PP[p.k].hits?' '+PP[p.k].hits:''} (${p.atyp?'atypical':m==null?'usually gone by '+fmtM(p.age):m>=p.age?'past '+fmtM(p.age):'fine until '+fmtM(p.age)})`);
+  const head=`Quick Screener ${fmtDate(q.date)} ${q.date.slice(0,4)}${m!=null?' · age '+fmtM(m):''} · PCC ${R.pcc}% · PVC ${R.pvc}%${R.nnt?` · ${R.nw-R.nnt}/${R.nw} words tested`:''}`;
+  return {head,B:B.filter(b=>b.items.length||b.k==='late'||b.k==='atyp').map(b=>b.items.length?b:{...b,items:[b.k==='late'?'Nothing behind for age':'None seen'],empty:true}),pats,name:hwName(c)||c.name}}
+function qsSummaryText(c){const s=qsSummary(c);if(!s)return '';return [`Where ${s.name} is at`,s.head,'',...s.B.flatMap(b=>[b.t.replace(/^\S+\s/,'')+':',...b.items.map(x=>'• '+x),'']),s.pats.length?'Patterns: '+s.pats.join('; '):'Patterns: none at 40% or more'].join('\n')}
+function qsSummaryHTML(c){const s=qsSummary(c);if(!s)return '';const col={first:'#FAECE7',late:'#FAEEDA',dev:'#EAF3DE',atyp:'#EEEDFE',ok:'#E1F5EE'};
+  return `<section class="panel"><div class="head" style="margin-bottom:10px"><div><span class="label">From the screener</span><h2>Where ${esc(s.name)} is at</h2></div><div class="row"><span class="hint">${esc(s.head)}</span><button class="btn small" data-act="qsSumCopy">Copy summary</button></div></div>
+  <div class="qss">${s.B.map(b=>`<div class="qss-b ${b.k==='ok'?'wide':''}" style="background:${col[b.k]}"><b>${esc(b.t)}</b><ul>${b.items.map(x=>`<li class="${b.empty?'muted':''}">${esc(x).replace(/\/([^\/\s]{1,3})\//g,'<span class="ipa">/$1/</span>').replace(/\[([^\]]+)\]/g,'<span class="ipa">[$1]</span>')}</li>`).join('')}</ul></div>`).join('')}</div>
+  <p class="hint" style="margin:10px 0 0"><b>Patterns:</b> ${s.pats.length?esc(s.pats.join(' · ')):'none at 40% or more'}</p></section>`}
 function profileView(c){
   const inv=c.inv||{},m=monthsOf(c),gs=goalSounds(c),sel=S.ui.psel;
   let h=`<div class="stack">`;
+  h+=qsSummaryHTML(c);
   /* --- age-based suggestions --- */
   h+=`<section class="panel"><div class="head" style="margin-bottom:10px"><div><span class="label">Age-appropriate goals</span><h2>${m!=null?'Suggestions for '+fmtM(m):'Add a date of birth'}</h2></div></div>`;
   if(m==null){h+=`<p class="muted" style="margin:0 0 10px">Suggestions are based on age. Add the client’s date of birth to see them.</p><button class="btn" data-act="editClient">Add date of birth</button></section>`}
@@ -5408,6 +5437,7 @@ document.addEventListener('click',async e=>{
    case 'mpgYes':case 'mpgNo':{const M=S.mpg;if(M.phase!=='ask')return;M.ok=a==='mpgYes';if(M.ok)M.matched++;recTrial(M.ok,M.cur[0]);M.phase='react';render();setTimeout(()=>{if(S.mpg===M&&M.phase==='react'){mpgNext();render()}},M.ok?1300:2200);break}
    case 'hwLink':S.ui.hw=id;render();break;
    case 'hwClose':S.ui.hw=null;render();break;
+   case 'qsSumCopy':{const t=qsSummaryText(c);try{await navigator.clipboard.writeText(t);toast('Summary copied')}catch(err){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Summary copied')}catch(e2){toast('Couldn’t copy')}ta.remove()}break}
    case 'hwCopy':{const i=$('#hw-url');try{await navigator.clipboard.writeText(i.value);toast('Link copied')}catch(err){i.select();try{document.execCommand('copy');toast('Link copied')}catch(e2){toast('Select the link and copy it')}}break}
    case 'famLink':{const g=c.goals.find(x=>x.id===id),u=famURL(c,g);try{await navigator.clipboard.writeText(u);S.ui.famLink=null;toast('Family link copied. Paste it into a text or email.')}catch(err){S.ui.famLink={g:id,u}}render();break}
    case 'caseOpen':S.ui={caselist:true};render();window.scrollTo(0,0);break;
