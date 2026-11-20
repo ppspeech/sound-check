@@ -1,4 +1,6 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.qsrow.qs-nt>.num,.qsrow.qs-nt>.w,.qsrow.qs-nt>.segs,.qsrow.qs-nt>.cc,.qsrow.qs-nt .ipa{opacity:.38}.qsrow.qs-nt .segs{pointer-events:none}.nt-b[aria-pressed=true]{color:var(--accent)}
+.qsp .marks .nt.on{background:#6b6259;color:#fff;border-color:#6b6259}
+</style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4472,6 +4474,8 @@ const SUBSUG={'p':['b','ʔ'],'b':['p','m'],'t':['d','k','ʔ'],'d':['t','ɡ','n']
 const VPAIR={p:'b',t:'d',k:'ɡ',f:'v','θ':'ð',s:'z','ʃ':'ʒ','tʃ':'dʒ'},DPAIR=Object.fromEntries(Object.entries(VPAIR).map(([a,b])=>[b,a]));
 const STOPSET=['p','b','t','d','k','ɡ','ʔ'],FRICSET=['f','v','θ','ð','s','z','ʃ','ʒ'];
 /* sub: undefined = correct, '' = omitted, '~' = distorted, '?' = error not specified, otherwise the IPA produced */
+function isNT(a,n){return (a.mk||{})[n]==='nt'}
+function qsTouched(a,n){return !!((a.mk||{})[n]&&(a.mk||{})[n]!=='nt')||!!(a.s||{})[n]&&Object.keys(a.s[n]).length>0||((a.e||{})[n]||[]).length>0||!!(a.tx||{})[n]}
 function subOf(a,n,i){const v=((a.s||{})[n]||{})[i];if(v!==undefined)return v;return ((a.e||{})[n]||[]).includes(i)?'?':undefined}
 function autoTx(a,n,segs){return segs.map((x,i)=>{const v=subOf(a,n,i);return v===undefined?x:v==='~'?x+'̴':v}).join('')}
 function subLabel(v){return v===''?'Ø':v==='~'?'dist.':v}
@@ -4496,7 +4500,7 @@ function autoDetect(a,pk,part,n){
 }
 function tickState(a,pk,part,n){const k=pk+':'+part+':'+n,auto=autoDetect(a,pk,part,n),man=(a.p||{})[k];const manual=man!==undefined&&man!==null;return {k,auto,manual,on:manual?!!man:auto}}
 
-function qsProcAgg(a){const agg={};QSP.forEach(p=>['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{const key=p.map?p.map[n]:(p.to||p.k);const o=agg[key]=agg[key]||{h:0,t:0};o.t++;if(tickState(a,p.k,part,n).on)o.h++})));return agg}
+function qsProcAgg(a){const agg={};QSP.forEach(p=>['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(isNT(a,n))return;const key=p.map?p.map[n]:(p.to||p.k);const o=agg[key]=agg[key]||{h:0,t:0};o.t++;if(tickState(a,p.k,part,n).on)o.h++})));return agg}
 function latestQS(c){return (c.ax||[]).filter(a=>a.type==='qs').sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:(b.ts||0)-(a.ts||0))[0]||null}
 /* present processes: latest screener (>=40%) unless the clinician overrides; falls back to manual ticks */
 function presentProcs(c){const q=latestQS(c),agg=q?qsProcAgg(q):{},man=c.procMan||{},out={};
@@ -4504,13 +4508,13 @@ function presentProcs(c){const q=latestQS(c),agg=q?qsProcAgg(q):{},man=c.procMan
     const on=man[p.k]!==undefined?!!man[p.k]:auto;out[p.k]={on,auto,pct,hits:o?o.h+'/'+o.t:null,manual:man[p.k]!==undefined,date:q?q.date:null}});return out}
 function qsCalc(sc){
   let ct=0,cok=0,vt=0,vok=0;const cons={},vow={};
-  qsItems().forEach(([n,w,t])=>{if(!w)return;const segs=t.split(' ');
+  let nw=0,nnt=0;qsItems().forEach(([n,w,t])=>{if(!w)return;nw++;if(isNT(sc,n)){nnt++;return}const segs=t.split(' ');
     const vi=segs.map((x,i)=>isC(x)?-1:i).filter(i=>i>=0),fv=vi[0]??0,lv=vi[vi.length-1]??segs.length;
     segs.forEach((x,i)=>{const sv=subOf(sc,n,i),bad=sv!==undefined;
       if(isC(x)){ct++;if(!bad)cok++;const k=CMAP[x];const o=cons[k]=cons[k]||{t:0,ok:0,pos:new Set(),subs:{}};o.t++;if(!bad)o.ok++;else{o.pos.add(i<fv?'i':i>lv?'f':'m');if(sv!=='?')o.subs[sv]=(o.subs[sv]||0)+1}}
       else{vt++;if(!bad)vok++;const o=vow[x]=vow[x]||{t:0,ok:0,subs:{}};o.t++;if(!bad)o.ok++;else if(sv!=='?')o.subs[sv]=(o.subs[sv]||0)+1}})});
-  const proc={};QSP.forEach(p=>{let hit=0,tot=0;['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{tot++;if(tickState(sc,p.k,part,n).on)hit++}));proc[p.k]={hit,tot,pct:tot?Math.round(hit/tot*100):0}});
-  return {ct,cok,vt,vok,pcc:ct?Math.round(cok/ct*100):0,pvc:vt?Math.round(vok/vt*100):0,cons,vow,proc};
+  const proc={};QSP.forEach(p=>{let hit=0,tot=0;['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(isNT(sc,n))return;tot++;if(tickState(sc,p.k,part,n).on)hit++}));proc[p.k]={hit,tot,pct:tot?Math.round(hit/tot*100):0}});
+  return {nw,nnt,ct,cok,vt,vok,pcc:ct?Math.round(cok/ct*100):0,pvc:vt?Math.round(vok/vt*100):0,cons,vow,proc};
 }
 function topSub(subs){const e=Object.entries(subs||{}).sort((a,b)=>b[1]-a[1]);return e.length?e[0][0]:null}
 function subsText(subs){const e=Object.entries(subs||{}).sort((a,b)=>b[1]-a[1]);return e.length?' · produced as '+e.map(([k,v])=>`[${subLabel(k)}]${v>1?'×'+v:''}`).join(', '):''}
@@ -4534,7 +4538,7 @@ function axView(c){
   if(!list.length)h+=`<p class="muted" style="margin:0">No screens yet. Start with the Quick Screener for PCC, PVC and process analysis, and the ICS for the family’s view of intelligibility. Each screen is dated, so you can repeat them at review.</p>`;
   else{
     if(qs.length>1||ics.length>1)h+=`<div class="twocol" style="margin-bottom:12px">${qs.length>1?`<div><span class="label">PCC over time</span>${trend(qs.map(q=>({d:q.date,v:qsCalc(q).pcc})),100,'PCC over time',v=>v+'%')}</div>`:''}${ics.length>1?`<div><span class="label">ICS mean over time</span>${trend(ics.filter(q=>icsMean(q)!=null).map(q=>({d:q.date,v:+icsMean(q).toFixed(2)})),5,'ICS over time',v=>v.toFixed(2))}</div>`:''}</div>`;
-    h+=`<div class="axlist">${list.map(a=>{let sum;if(a.type==='qs'){const R=qsCalc(a);sum=`PCC <b>${R.pcc}%</b> · PVC <b>${R.pvc}%</b>`}else{const m=icsMean(a);sum=`Mean <b>${m!=null?m.toFixed(2):'–'}</b> / 5`}
+    h+=`<div class="axlist">${list.map(a=>{let sum;if(a.type==='qs'){const R=qsCalc(a);sum=`PCC <b>${R.pcc}%</b> · PVC <b>${R.pvc}%</b>${R.nnt?` · ${R.nw-R.nnt}/${R.nw} words`:''}`}else{const m=icsMean(a);sum=`Mean <b>${m!=null?m.toFixed(2):'–'}</b> / 5`}
       return `<button class="axitem" data-act="axpick" data-id="${a.id}" aria-current="${a.id===S.ui.ax}"><span><b>${a.type==='qs'?'Quick Screener':'ICS'}</b> <span class="muted">${fmtDate(a.date)} ${a.date.slice(0,4)}</span></span><span>${sum}</span></button>`}).join('')}</div>`;
   }
   h+=`</section>`;
@@ -4573,7 +4577,7 @@ function qspView(c,a){
    ${QSPG[w]?`<div class="qsp-card img" id="qsp-card"><div class="pic">${pic}</div></div>`:`<div class="qsp-card ${Q.hide?'hidew':''}" id="qsp-card"><span class="num">${n}</span><div class="pic ${multi?'multi':''}">${pic}</div><div class="word">${esc(w)}</div></div>`}
    <button class="nav" data-act="qspGo" data-i="${i+1}" ${i<items.length-1?'':'disabled'} aria-label="Next">›</button></div>
    <div class="qsp-adult">${QSPG[w]?(QSPGN[QSPG[w]]>1?`<div class="prompt">This page has more than one word. Target now: <b>${esc(w)}</b> (${n})</div>`:`<div class="prompt" style="background:var(--chip)">Item ${n}: <b>${esc(w)}</b></div>`):pr?`<div class="prompt"><b>Prompt if needed:</b> ${esc(pr)}</div>`:''}
-   <div class="marks"><button class="c ${mk==='c'?'on':''}" data-act="qspMark" data-v="c" data-n="${n}">✓ Said it</button><button class="x ${mk==='x'?'on':''}" data-act="qspMark" data-v="x" data-n="${n}">✗ Error</button><button class="m ${mk==='m'?'on':''}" data-act="qspMark" data-v="m" data-n="${n}">↺ Imitated</button></div>`;
+   <div class="marks"><button class="c ${mk==='c'?'on':''}" data-act="qspMark" data-v="c" data-n="${n}">✓ Said it</button><button class="x ${mk==='x'?'on':''}" data-act="qspMark" data-v="x" data-n="${n}">✗ Error</button><button class="m ${mk==='m'?'on':''}" data-act="qspMark" data-v="m" data-n="${n}">↺ Imitated</button><button class="nt ${mk==='nt'?'on':''}" data-act="qspMark" data-v="nt" data-n="${n}">Didn’t do it</button></div>`;
   if(mk==='x'||mk==='m'||(a.s||{})[n]){const pk=S.ui.pick&&S.ui.pick.n==n?S.ui.pick.i:null;
     h+=`<div class="qsp-segs"><span class="hint">Tap the sound they got wrong:</span><div class="segs">${segs.map((x,j)=>{const v=subOf(a,n,j);return `<button class="seg-b ${isC(x)?'':'v'} ${v!==undefined?'x':''}" data-act="qpick" data-n="${n}" data-i="${j}" style="${pk===j?'outline:2px solid var(--accent);outline-offset:1px':''}">${x}${v!==undefined&&v!=='?'?`<sub style="margin-left:2px;font-size:.7em">${esc(subLabel(v))}</sub>`:''}</button>`}).join('')}</div>`;
     if(pk!==null){const tgt=segs[pk],cu=subOf(a,n,pk),cons=isC(tgt),sugg=cons?(SUBSUG[tgt]||[]):VKEYS.filter(k=>k!==tgt);const opt=(v,l)=>`<button class="chipbtn ${cons?'':'ipa'}" data-act="qsub" data-v="${esc(v)}" aria-pressed="${cu===v}">${l}</button>`;
@@ -4589,14 +4593,14 @@ function qsEditor(c,a){
   <button class="btn primary" data-act="qspOpen" style="margin-bottom:12px">▶ Show picture cards to the child</button>
   <div class="fgrid" style="margin-bottom:14px"><label class="field"><span class="label">Parent intelligibility rating</span><select data-ax="ip"><option value="">–</option>${['1 Completely intelligible','2 Mostly intelligible','3 Somewhat intelligible','4 Mostly unintelligible','5 Completely unintelligible'].map((l,i)=>`<option value="${i+1}" ${String(a.ip)===String(i+1)?'selected':''}>${l}</option>`).join('')}</select></label>
   <label class="field"><span class="label">Clinician intelligibility rating</span><select data-ax="ic"><option value="">–</option>${['1 Completely intelligible','2 Mostly intelligible','3 Somewhat intelligible','4 Mostly unintelligible','5 Completely unintelligible'].map((l,i)=>`<option value="${i+1}" ${String(a.ic)===String(i+1)?'selected':''}>${l}</option>`).join('')}</select></label></div>
-  <p class="hint" style="margin:0 0 6px">Tap a sound the child got wrong, then tap what they said. The transcription, PCC, PVC and process analysis fill in automatically.</p>`;
+  <div class="row" style="justify-content:space-between;align-items:center;margin:0 0 6px;gap:8px"><p class="hint" style="margin:0;flex:1;min-width:220px">Tap a sound the child got wrong, then tap what they said. The transcription, PCC, PVC and process analysis fill in automatically. Tap <b>NT</b> for words they didn’t do.</p><span class="row" style="gap:6px">${R.nnt?`<button class="btn small" data-act="qsNTclear">Clear all NT</button>`:''}<button class="btn small" data-act="qsNTrest" title="Marks every word after the last one you scored as not tested">Mark the rest NT</button></span></div>`;
   qsItems().forEach(([n,w,t])=>{
     if(!w){h+=`<div class="qsrow"><span class="num">${n}</span><span class="w muted">Item 24</span><div class="row" style="grid-column:3/-1"><input type="text" id="q24w" placeholder="Word from your form" style="width:auto;flex:1;min-width:110px"><input type="text" id="q24t" placeholder="Target IPA with spaces, e.g. b ɐ t ə" style="width:auto;flex:2;min-width:150px"><button class="btn small" data-act="save24">Save item</button></div></div>`;return}
     const segs=t.split(' ');const sb=i=>subOf(a,n,i);const nc=segs.filter(isC).length,ok=segs.filter((x,i)=>isC(x)&&sb(i)===undefined).length;
     const man=(a.tx||{})[n],tx=man||autoTx(a,n,segs),pk=S.ui.pick&&S.ui.pick.n==n?S.ui.pick.i:null;
-    h+=`<div class="qsrow"><span class="num">${n}</span><span class="w"><b>${esc(w)}</b>${(a.mk||{})[n]==='m'?' <span class="pill warn" title="Imitated">↺</span>':''}</span><div class="segs">${segs.map((x,i)=>{const v=sb(i);return `<button class="seg-b ${isC(x)?'':'v'} ${v!==undefined?'x':''}" data-act="qpick" data-n="${n}" data-i="${i}" aria-pressed="${pk===i}" title="${isC(x)?'Consonant':'Vowel'} /${x}/${v!==undefined?' → '+subLabel(v):''}" style="${pk===i?'outline:2px solid var(--accent);outline-offset:1px':''}">${x}${v!==undefined&&v!=='?'?`<sub style="text-decoration:none;display:inline-block;margin-left:2px;font-size:.7em">${esc(subLabel(v))}</sub>`:''}</button>`}).join('')}</div><span class="cc ${ok===nc?'full':ok===0?'zero':'part'}" title="Consonants correct">${ok}/${nc}</span>`;
+    const nt=isNT(a,n);h+=`<div class="qsrow ${nt?'qs-nt':''}"><span class="num">${n}</span><span class="w"><b>${esc(w)}</b>${(a.mk||{})[n]==='m'?' <span class="pill warn" title="Imitated">↺</span>':''}${nt?' <span class="pill" title="Not tested">NT</span>':''}</span><div class="segs">${segs.map((x,i)=>{const v=sb(i);return `<button class="seg-b ${isC(x)?'':'v'} ${v!==undefined?'x':''}" data-act="qpick" data-n="${n}" data-i="${i}" aria-pressed="${pk===i}" title="${isC(x)?'Consonant':'Vowel'} /${x}/${v!==undefined?' → '+subLabel(v):''}" style="${pk===i?'outline:2px solid var(--accent);outline-offset:1px':''}">${x}${v!==undefined&&v!=='?'?`<sub style="text-decoration:none;display:inline-block;margin-left:2px;font-size:.7em">${esc(subLabel(v))}</sub>`:''}</button>`}).join('')}</div><span class="cc ${ok===nc?'full':ok===0?'zero':'part'}" title="Consonants correct">${ok}/${nc}</span>`;
     if(S.ui.txEdit==n)h+=`<input type="text" class="ipa" data-qtx="${n}" value="${esc(man||tx)}" aria-label="Transcription for ${esc(w)}">`;
-    else h+=`<span class="row" style="gap:4px;flex-wrap:nowrap;min-width:0"><span class="ipa" style="font-size:1.05rem;${man?'':'color:var(--muted)'}">[${esc(tx)}]</span><button class="btn small ghost" data-act="txEdit" data-n="${n}" title="Edit transcription" style="padding:2px 6px">✎</button></span>`;
+    else h+=`<span class="row" style="gap:4px;flex-wrap:nowrap;min-width:0"><span class="ipa" style="font-size:1.05rem;${man?'':'color:var(--muted)'}">[${esc(tx)}]</span><button class="btn small ghost" data-act="txEdit" data-n="${n}" title="Edit transcription" style="padding:2px 6px">✎</button><button class="btn small ghost nt-b" data-act="qsNT" data-n="${n}" aria-pressed="${nt}" title="${nt?'Mark as tested':'Not tested'}" style="padding:2px 6px">${nt?'Undo NT':'NT'}</button></span>`;
     h+=`</div>`;
     if(pk!==null){const tgt=segs[pk],cur=sb(pk),cons=isC(tgt);const sugg=cons?(SUBSUG[tgt]||[]):VKEYS.filter(k=>k!==tgt);
       const opt=(v,l)=>`<button class="chipbtn ${cons?'':'ipa'}" data-act="qsub" data-v="${esc(v)}" aria-pressed="${cur===v}">${l}</button>`;
@@ -4608,7 +4612,7 @@ function qsEditor(c,a){
   h+=`</section>`;
   /* results */
   h+=`<section class="panel"><div class="head" style="margin-bottom:10px"><div><span class="label">Results</span><h2>Screening summary</h2></div></div><div class="kpis">
-   <div class="kpi"><span class="label">PCC</span><div class="big">${R.pcc}%</div><div class="hint">${R.cok}/${R.ct} consonants · ${sev(R.pcc)} range</div></div>
+   <div class="kpi"><span class="label">PCC</span><div class="big">${R.pcc}%</div><div class="hint">${R.cok}/${R.ct} consonants · ${sev(R.pcc)} range${R.nnt?`<br><b>${R.nw-R.nnt}/${R.nw} words tested</b>`:''}</div></div>
    <div class="kpi"><span class="label">PVC</span><div class="big">${R.pvc}%</div><div class="hint">${R.vok}/${R.vt} vowels</div></div>
    <div class="kpi"><span class="label">Intelligibility</span><div class="big">${a.ip||'–'} <span class="muted" style="font-size:1rem">/ ${a.ic||'–'}</span></div><div class="hint">Parent / clinician (1 = fully intelligible)</div></div></div>
    <p class="hint" style="margin:8px 0 0">PCC severity bands after Shriberg &amp; Kwiatkowski (1982), designed for conversational samples, so treat single-word bands as a guide only.</p></section>`;
@@ -4616,7 +4620,7 @@ function qsEditor(c,a){
   h+=`<section class="panel"><div class="head" style="margin-bottom:10px"><div><span class="label">Analysis form</span><h2>Phonological processes</h2></div><span class="hint">Ticked automatically from what the child said. Tap to override (dashed = your override)</span></div><div class="procs">`;
   QSP.forEach(p=>{const pr=R.proc[p.k];const pr2=PROC.find(x=>x.k===(p.to||p.k));
     h+=`<div class="proc"><div class="ph2"><b>${esc(p.label)}</b><span class="pct ${pr.pct>=40?'hi':''}">${pr.hit}/${pr.tot} · ${pr.pct}%</span></div>`;
-    ['si','sf','a'].forEach(part=>{if(!p[part])return;h+=`${part!=='a'?`<span class="label" style="font-size:.64rem">${part==='si'?'Syllable-initial':'Syllable-final'}</span>`:''}<div class="ticks" style="margin:3px 0 6px">${p[part].map(n=>{const it=qsItems().find(x=>x[0]===n);const ts=tickState(a,p.k,part,n);const tx=(a.tx||{})[n]||autoTx(a,n,it[2].split(' '));return `<button class="tick" data-act="qproc" data-k="${ts.k}" data-on="${ts.on?1:0}" data-auto="${ts.auto?1:0}" aria-pressed="${ts.on}" title="[${esc(tx)}]${ts.manual?' · set by you':ts.auto?' · auto-detected':''}" style="${ts.manual?'border-style:dashed':''}">${esc(it&&it[1]||'#'+n)}<small>${ts.manual?'✎':ts.on?'auto':n}</small></button>`}).join('')}</div>`});
+    ['si','sf','a'].forEach(part=>{if(!p[part])return;h+=`${part!=='a'?`<span class="label" style="font-size:.64rem">${part==='si'?'Syllable-initial':'Syllable-final'}</span>`:''}<div class="ticks" style="margin:3px 0 6px">${p[part].filter(n=>!isNT(a,n)).map(n=>{const it=qsItems().find(x=>x[0]===n);const ts=tickState(a,p.k,part,n);const tx=(a.tx||{})[n]||autoTx(a,n,it[2].split(' '));return `<button class="tick" data-act="qproc" data-k="${ts.k}" data-on="${ts.on?1:0}" data-auto="${ts.auto?1:0}" aria-pressed="${ts.on}" title="[${esc(tx)}]${ts.manual?' · set by you':ts.auto?' · auto-detected':''}" style="${ts.manual?'border-style:dashed':''}">${esc(it&&it[1]||'#'+n)}<small>${ts.manual?'✎':ts.on?'auto':n}</small></button>`}).join('')}</div>`});
     if(m!=null&&pr.hit&&pr2&&!pr2.atyp&&p.k!=='stopfric')h+=`<div class="hint">${m>=pr2.age?'Past the usual elimination age ('+fmtM(pr2.age)+')':'Still age-appropriate until '+fmtM(pr2.age)}</div>`;
     if(pr.hit&&pr2&&pr2.atyp)h+=`<div class="hint" style="color:var(--accent)">Atypical at any age</div>`;
     h+=`</div>`});
@@ -4680,7 +4684,7 @@ function buildNote(c,opt){
   L.push('Speech:'+(act.length?'':' Not discussed'));
   act.forEach(g=>L.push(`- ${goalDesc(g)}: ${progressLine(c,g)}`));
   const q=latestQS(c);if(q&&opt.ax){const R=qsCalc(q);const pp=presentProcs(c);const on=PROC.filter(p=>pp[p.k].on).map(p=>p.label.toLowerCase());
-    L.push(`- Most recent Quick Screener (${fmtDate(q.date)} ${q.date.slice(0,4)}): PCC ${R.pcc}%, PVC ${R.pvc}%${on.length?'; patterns observed: '+on.join(', '):''}.`)}
+    L.push(`- Most recent Quick Screener (${fmtDate(q.date)} ${q.date.slice(0,4)}): PCC ${R.pcc}%, PVC ${R.pvc}%${R.nnt?` (${R.nw-R.nnt} of ${R.nw} words attempted)`:''}${on.length?'; patterns observed: '+on.join(', '):''}.`)}
   const ics=(c.ax||[]).filter(a=>a.type==='ics'&&icsMean(a)!=null).sort((a,b)=>a.date<b.date?1:-1)[0];if(ics&&opt.ax)L.push(`- ICS (${fmtDate(ics.date)} ${ics.date.slice(0,4)}): mean ${icsMean(ics).toFixed(2)}/5${ics.who?', completed by '+ics.who:''}.`);
   L.push('Language: Not discussed');
   const ready=act.filter(g=>mastery(c,g).ready);
@@ -4708,8 +4712,8 @@ function buildSummary(c,who){
   return L.join('\n');
 }
 
-function errExamples(q){const out={};if(!q)return out;QS.forEach(([n,w,t])=>{const segs=t.split(' ');segs.forEach((x,i)=>{if(!isC(x))return;const v=subOf(q,n,i);if(v===undefined)return;const k=CMAP[x];(out[k]=out[k]||[]).push({w,tx:(q.tx||{})[n]||autoTx(q,n,segs),v,pos:regions(segs).on.includes(i)?'i':regions(segs).co.includes(i)?'f':'m'})})});return out}
-function procExamples(q){const out={};if(!q)return out;QSP.forEach(p=>{const ex=[];['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(tickState(q,p.k,part,n).on){const it=QS.find(x=>x[0]===n);ex.push(`${it[1]} [${(q.tx||{})[n]||autoTx(q,n,it[2].split(' '))}]`)}}));out[p.k]=ex});return out}
+function errExamples(q){const out={};if(!q)return out;QS.forEach(([n,w,t])=>{if(isNT(q,n))return;const segs=t.split(' ');segs.forEach((x,i)=>{if(!isC(x))return;const v=subOf(q,n,i);if(v===undefined)return;const k=CMAP[x];(out[k]=out[k]||[]).push({w,tx:(q.tx||{})[n]||autoTx(q,n,segs),v,pos:regions(segs).on.includes(i)?'i':regions(segs).co.includes(i)?'f':'m'})})});return out}
+function procExamples(q){const out={};if(!q)return out;QSP.forEach(p=>{const ex=[];['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(isNT(q,n))return;if(tickState(q,p.k,part,n).on){const it=QS.find(x=>x[0]===n);ex.push(`${it[1]} [${(q.tx||{})[n]||autoTx(q,n,it[2].split(' '))}]`)}}));out[p.k]=ex});return out}
 function summaryView(c){
   const m=monthsOf(c),q=latestQS(c),qs=(c.ax||[]).filter(a=>a.type==='qs').sort((a,b)=>a.date<b.date?-1:1),prevQ=qs.length>1?qs[qs.length-2]:null;
   const R=q?qsCalc(q):null,R0=prevQ?qsCalc(prevQ):null,ics=(c.ax||[]).filter(a=>a.type==='ics'&&icsMean(a)!=null).sort((a,b)=>a.date<b.date?-1:1);
@@ -4995,7 +4999,7 @@ function profileView(c){
   let src=S.ui.src||'cur';if(src!=='cur'&&src!=='sess'&&!screens.find(a=>a.id===src))src='cur';
   let vInv=inv,vVinv=c.vinv||{},live=src==='cur',srcNote='';
   if(src==='sess'){vInv=sessInv(c);vVinv={};srcNote='Built from each goal’s latest session: 80% or more = correct, 50–79% = inconsistent, under 50% = error. Vowels aren’t tracked in sessions.'}
-  else if(src!=='cur'){const a=screens.find(x=>x.id===src),R=qsCalc(a);vInv=qsInv(a,R);vVinv=qsVinv(R);srcNote=`Quick Screener ${fmtDate(a.date)} ${a.date.slice(0,4)} · PCC ${R.pcc}% · PVC ${R.pvc}%`}
+  else if(src!=='cur'){const a=screens.find(x=>x.id===src),R=qsCalc(a);vInv=qsInv(a,R);vVinv=qsVinv(R);srcNote=`Quick Screener ${fmtDate(a.date)} ${a.date.slice(0,4)} · PCC ${R.pcc}% · PVC ${R.pvc}%${R.nnt?` · ${R.nw-R.nnt}/${R.nw} words tested`:''}`}
   h+=`<section class="panel" style="padding-block:12px"><div class="row" style="justify-content:space-between"><span class="label">Show charts from</span><div class="seg"><button data-act="src" data-k="cur" aria-pressed="${src==='cur'}">Current profile</button>${screens.map(a=>`<button data-act="src" data-k="${a.id}" aria-pressed="${src===a.id}">Screener ${fmtDate(a.date)}</button>`).join('')}<button data-act="src" data-k="sess" aria-pressed="${src==='sess'}">Sessions</button></div></div>${!live?`<div class="row" style="justify-content:space-between;margin-top:10px"><span class="hint">${esc(srcNote)} View only.</span>${src!=='sess'?`<button class="btn small primary" data-act="applyQSfrom" data-id="${src}">Copy into current profile</button>`:''}</div>`:`<p class="hint" style="margin:8px 0 0">Tap a sound or vowel to edit it and see its screener and session results together.</p>`}</section>`;
   /* --- PMV chart --- */
   h+=`<section class="panel"><div class="head" style="margin-bottom:10px"><div><span class="label">Place · Manner · Voice</span><h2>PMV chart</h2></div><span class="hint">${live?'Tap a sound to record its status':'Hover a sound for its result'}</span></div>${pmvTable(vInv,gs,m,live?sel:null,live)}`;
@@ -5512,8 +5516,11 @@ document.addEventListener('click',async e=>{
    case 'qspGo':{const nItems=qsItems().filter(x=>x[1]).length;S.ui.qsp.i=Math.max(0,Math.min(nItems-1,+b.dataset.i));S.ui.qsp.grid=false;S.ui.pick=null;render();break}
    case 'qspMark':{const a=c.ax.find(x=>x.id===S.ui.ax),n=b.dataset.n,v=b.dataset.v;a.mk=a.mk||{};S.ui.pick=null;
      if(a.mk[n]===v){delete a.mk[n];save();break}
-     a.mk[n]=v;if(v==='c'){if(a.s)delete a.s[n];if(a.e)delete a.e[n]}
-     save();if(v==='c'){const nItems=qsItems().filter(x=>x[1]).length;setTimeout(()=>{if(S.ui.qsp&&S.ui.qsp.i<nItems-1){S.ui.qsp.i++;render()}},260)}break}
+     a.mk[n]=v;if(v==='c'||v==='nt'){if(a.s)delete a.s[n];if(a.e)delete a.e[n]}
+     save();if(v==='c'||v==='nt'){const nItems=qsItems().filter(x=>x[1]).length;setTimeout(()=>{if(S.ui.qsp&&S.ui.qsp.i<nItems-1){S.ui.qsp.i++;render()}},260)}break}
+   case 'qsNT':{const a=c.ax.find(x=>x.id===S.ui.ax),n=b.dataset.n;a.mk=a.mk||{};if(a.mk[n]==='nt')delete a.mk[n];else{a.mk[n]='nt';if(a.s)delete a.s[n];if(a.e)delete a.e[n];if(a.tx)delete a.tx[n]}S.ui.pick=null;save();break}
+   case 'qsNTclear':{const a=c.ax.find(x=>x.id===S.ui.ax);Object.keys(a.mk||{}).forEach(n=>{if(a.mk[n]==='nt')delete a.mk[n]});save();break}
+   case 'qsNTrest':{const a=c.ax.find(x=>x.id===S.ui.ax);const its=qsItems().filter(x=>x[1]);let last=-1;its.forEach(([n],i)=>{if(qsTouched(a,n))last=i});if(last<0){toast('Score at least one word first');break}if(last===its.length-1){toast('Nothing left after word '+its[last][0]);break}a.mk=a.mk||{};its.slice(last+1).forEach(([n])=>{a.mk[n]='nt'});save();toast(`Words ${its[last+1][0]}–${its[its.length-1][0]} marked NT`);break}
    case 'qpick':{const n=b.dataset.n,i=+b.dataset.i;S.ui.pick=S.ui.pick&&S.ui.pick.n==n&&S.ui.pick.i===i?null:{n,i};render();setTimeout(()=>{if(S.ui.pick)document.querySelector('[data-act="qsub"]')?.focus({preventScroll:true})},0);break}
    case 'qsub':case 'qsubOther':{const a=c.ax.find(x=>x.id===S.ui.ax);const {n,i}=S.ui.pick;a.s=a.s||{};
      if(a.e&&a.e[n]){a.s[n]=a.s[n]||{};a.e[n].forEach(j=>{if(a.s[n][j]===undefined)a.s[n][j]='?'});delete a.e[n]}
@@ -5533,7 +5540,7 @@ document.addEventListener('click',async e=>{
    case 'applyQS':{const a=c.ax.find(x=>x.id===S.ui.ax);const R=qsCalc(a);const inv=qsInv(a,R),vinv=qsVinv(R);c.inv=c.inv||{};
      Object.entries(inv).forEach(([k,v])=>{c.inv[k]=Object.assign({},c.inv[k]||{},{st:v.st,pos:v.pos,acc:v.acc},v.sub?{sub:v.sub}:{})});
      c.vinv=c.vinv||{};Object.entries(vinv).forEach(([k,v])=>{c.vinv[k]=Object.assign({},c.vinv[k]||{},{st:v.st},v.sub?{sub:v.sub}:{})});
-     c.proc=c.proc||{};const agg={};QSP.forEach(p=>['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{const key=p.map?p.map[n]:(p.to||p.k);const o=agg[key]=agg[key]||{h:0,t:0};o.t++;if(tickState(a,p.k,part,n).on)o.h++})));
+     c.proc=c.proc||{};const agg={};QSP.forEach(p=>['si','sf','a'].forEach(part=>(p[part]||[]).forEach(n=>{if(isNT(a,n))return;const key=p.map?p.map[n]:(p.to||p.k);const o=agg[key]=agg[key]||{h:0,t:0};o.t++;if(tickState(a,p.k,part,n).on)o.h++})));
      Object.entries(agg).forEach(([k,o])=>{if(o.t&&o.h/o.t>=.4)c.proc[k]=true;else delete c.proc[k]});c.procMan={};
      S.tab='profile';S.ui={};save();window.scrollTo(0,0);toast('Sound profile updated from screener');break}
    case 'vsel':S.ui.vsel=S.ui.vsel===b.dataset.k?null:b.dataset.k;render();break;
