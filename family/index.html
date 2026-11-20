@@ -141,6 +141,7 @@ function render(){
   if(!V.k){h+=`<div class="card" style="padding:40px 20px"><div class="pic">👆</div><p style="font-size:1.15rem;margin:8px 0 0">Pick the sound your speech pathologist is working on.</p></div>`}
   else{
     const hw=V.k===HW;
+    if(hw){h+=`<div class="play"><button class="bigplay" data-a="games"><i>🎮</i>Play the games</button></div>`}else{
     if(hw&&V.br.length)h+=`<div class="warm"><h2>Warm-up first</h2><p>Say the two parts, then push them together. Tap one to hear it.</p><div class="wlist">${V.br.map((x,i)=>`<button class="wcard" data-a="wsay" data-i="${i}"><span class="wp">${esc(x.p.replace("|",""))}</span><span class="wt">${esc(x.t)}</span><span class="wp big">${esc(x.tp)}</span></button>`).join('')}</div></div>`;
     if(hw)h+=chartHTML()+`<div class="play"><button class="bigplay" data-a="games"><i>🎮</i>Play the games</button><button class="btn" data-a="fcT">${V.fc?'Hide flashcards':'🃏 Flashcards instead'}</button></div>`;
     h+=`<div class="main ${hw&&!V.fc?'nofc':''}">`;
@@ -156,7 +157,7 @@ function render(){
        <div class="rate"><button class="r" data-a="rate" data-v="r"><i></i>Let’s try again</button><button class="y" data-a="rate" data-v="y"><i></i>Quite clear</button><button class="b" data-a="rate" data-v="b"><i></i>Super clear</button></div>`}
     h+=`</div>`}
     h+=`</div>`;
-  }
+  }}
   if(V.cele){h+=`<div class="cele" data-a="celeX"><div><i>${V.cele}</i><b>New sticker!</b><span>Great practising today${ST.name?', '+esc(ST.name):''}!</span></div></div>`;const cz=V.cele;setTimeout(()=>{if(V.cele===cz){V.cele=null;render()}},2800)}
   h+=`<div class="foot"><span>Practice stays on this device until you send it.</span><div class="row"><button class="btn" data-a="setup">${V.share?'Close':'⚙︎ For speech pathologists'}</button></div></div>`;
   if(V.share){h+=`<div class="panel"><h3>Set up a link for a family</h3>
