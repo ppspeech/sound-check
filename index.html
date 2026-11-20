@@ -4395,6 +4395,7 @@ function goalsView(c){
 
 /* ============================== HOMEWORK LINK (family page on GitHub, words packed in the link) ============================== */
 const HW_HOME='https://ppspeech.github.io/sound-check/family/';
+function hwShown(c){return String(c.hwNick||'').trim().slice(0,20)||hwName(c)}
 function hwName(c){return String(c.name||'').replace(/^example\s*[–-]\s*/i,'').trim().slice(0,20)}
 let BRMAP=null;
 function brInfo(w){if(!BRMAP){BRMAP={};Object.values(GS).forEach(o=>(o.br||[]).forEach(it=>bForms(it).forEach(f=>{BRMAP[String(f).toLowerCase()]=it})))}
@@ -4411,16 +4412,17 @@ function hwItems(c,g){const s=S.sess&&S.sess.cid===c.id&&S.sess.goalId===g.id?S.
   if(!keys.length){const ps=pairsFor(g).map(p=>p[0]+'/'+p[1]);const pk=ps.filter(k=>picOf(k.split('/')[0]));keys=(pk.length>=6?pk:ps).slice(0,12)}
   return keys.slice(0,30).map(k=>{if(BFORM[String(k).toLowerCase()]){const bi=brInfo(k);return bi?[bi.t,bi.tp,"",bi.txt,bi.pics]:[disp(k),picOf(k)||'']}const [a,b]=k.split('/');return [a,picOf(a)||'',b]})}
 function hwURL(c,g){const w=hwItems(c,g);if(!w.length)return '';const gt=goalTitle(g);
-  const o={n:hwName(c),t:(goalBigLabel(g)+' · '+gt.sub).slice(0,60),w};if(g.approach==='trad'&&FAMK.includes(g.target))o.k=g.target;
+  const o={n:hwShown(c),t:(goalBigLabel(g)+' · '+gt.sub).slice(0,60),w};if(g.approach==='trad'&&FAMK.includes(g.target))o.k=g.target;
   const u=new TextEncoder().encode(JSON.stringify(o));let b='';u.forEach(x=>b+=String.fromCharCode(x));
   return HW_HOME+'#h='+btoa(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 function hwQR(url){try{if(url.length>1800)return '';const q=qrcode(0,'L');q.addData(url,'Byte');q.make();return q.createSvgTag({cellSize:4,margin:4,scalable:true})}catch(e){return ''}}
-function hwModal(c){const g=(c.goals||[]).find(x=>x.id===S.ui.hw);if(!g)return '';const url=hwURL(c,g),items=hwItems(c,g),name=hwName(c)||'your child',qr=url?hwQR(url):'';
+function hwModal(c){const g=(c.goals||[]).find(x=>x.id===S.ui.hw);if(!g)return '';const url=hwURL(c,g),items=hwItems(c,g),name=hwShown(c)||'your child',qr=url?hwQR(url):'';
   const fromSess=S.sess&&S.sess.cid===c.id&&S.sess.goalId===g.id&&S.sess.words.length;
   if(!url)return `<div class="modal" role="dialog" aria-modal="true"><div class="box"><div class="head" style="margin:0"><h2>Homework link</h2><button class="btn ghost" data-act="hwClose">Close</button></div><p class="muted">No words for this goal yet.</p></div></div>`;
   return `<div class="modal" role="dialog" aria-modal="true" aria-label="Homework link"><div class="box hwbox">
    <div class="head" style="margin:0 0 10px"><div><span class="label">Homework link</span><h2>${esc(goalBigLabel(g))} · ${esc(goalTitle(g).sub)}</h2></div><button class="btn ghost" data-act="hwClose">Close</button></div>
    <div class="hwgrid"><div class="hwl"><p style="margin:0 0 8px">Opens on their phone or iPad: flashcards, games and stars. Progress stays on their device. Only “${esc(name)}” and the words go in the link.</p>
+     <label class="field" style="margin:0 0 8px;display:flex;flex-direction:row;align-items:center;gap:8px"><span class="label" style="white-space:nowrap">Name they see</span><input type="text" data-hwnick="1" maxlength="20" value="${esc(c.hwNick||'')}" placeholder="${esc(hwName(c))}" style="flex:1"></label>
      <input type="text" readonly id="hw-url" value="${esc(url)}" onclick="this.select()" aria-label="Homework link">
      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="hwCopy">Copy link</button><a class="btn" href="sms:?&body=${encodeURIComponent(`Here’s ${name}’s speech practice: ${url}`)}">Text it</a><a class="btn" href="mailto:?subject=${encodeURIComponent(`${name}’s speech practice`)}&body=${encodeURIComponent(`Hi! Here’s ${name}’s practice for this week. Open it on a phone or iPad:\n\n${url}`)}">Email it</a><a class="btn" href="${esc(url)}" target="_blank" rel="noopener">Preview</a></div>
      <div class="sub"><span class="label">${items.length} words · ${fromSess?'the ones selected in today’s session':'picked automatically (select words in a session to choose your own)'}</span><div class="words" style="margin-top:6px">${items.map(x=>`<span class="pill">${x[1]?x[1]+' ':''}${esc(x[3]||x[0])}${x[2]?` <span class="muted" style="font-weight:600">not ${esc(x[2])}</span>`:''}</span>`).join('')}</div></div></div>
@@ -5629,6 +5631,7 @@ document.addEventListener('change',e=>{
   if(t.id==='mw-k'){const w=$('#mw-w')?.value||'',pic=$('#mw-pic')?.value||'';S.ui.mwK=t.value;S.ui.mwP=null;render();const a=$('#mw-w'),bb=$('#mw-pic');if(a)a.value=w;if(bb)bb.value=pic;return}
   if(t.id==='mw-p'){S.ui.mwP=t.value;return}
   if(t.id==='mpick'){S.cur=t.value||null;if(S.tab==='library')S.tab='goals';S.ui={};render();return}
+  if(t.dataset.hwnick){const c=cur();const v=t.value.trim().slice(0,20);if(v)c.hwNick=v;else delete c.hwNick;save();return}
   if(t.dataset.ax){const c=cur(),a=(c.ax||[]).find(x=>x.id===S.ui.ax);if(a){a[t.dataset.ax]=t.value;if(['date','ip','ic'].includes(t.dataset.ax))save();else persist(S.cur)}return}
   if(t.dataset.qtx){const c=cur(),a=(c.ax||[]).find(x=>x.id===S.ui.ax);if(a){a.tx=a.tx||{};a.tx[t.dataset.qtx]=t.value;persist(S.cur)}return}
   if(t.dataset.vsub){const c=cur();c.vinv=c.vinv||{};const k=S.ui.vsel;c.vinv[k]=c.vinv[k]||{st:''};c.vinv[k].sub=t.value;save();return}
