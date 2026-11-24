@@ -5858,7 +5858,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
           <div class="ch-card res ${B.done?"pop":""}" id="brpRes">${P.pw?`<span class="ch-pic">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
         </div>
         <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and slide along the snake… then say "+E(P.B)+"!":"Hold it… then let go into "+E(P.B)}</div></div>
-      ${B.done?`<button class="brp-hold sayit" data-brp="sayit">🗣️ Now say <b>${E(P.W)}</b> at normal speed${B.say?` <span class="brp-sayn">×${B.say}</span>`:""}</button>`:`<button class="brp-hold" id="brpHold">${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`}`;
+      ${B.done?`<button class="brp-hold sayit" data-brp="sayit">🗣️ <b>${E(P.W)}</b>${B.say?` <span class="brp-sayn">×${B.say}</span>`:""}</button>`:`<button class="brp-hold" id="brpHold">${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`}`;
     return `<div class="brp-stage river" id="brpStage">
         <div class="brp-frog" id="brpFrog" style="left:${[4,22,48,74][B.step+1]}%">🐸</div>
         <div class="brp-bank">${P.pw?`<span class="brp-pic">${B.step>=2?P.pw:(P.pb||"🏁")}</span>`:"🏁"}</div>
@@ -5925,7 +5925,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   function nailBar(b){ const ms={slow:2400,mid:1600,glide:1000}[spd()[0]]||1600; const P=parts(cur().it);
     let bar=b.querySelector(".ch-bar"); if(!bar){ bar=document.createElement("i"); bar.className="ch-bar"; bar.innerHTML="<i></i>"; b.appendChild(bar); }
     const f=bar.firstChild; f.style.transition="none"; f.style.width="0%"; void f.offsetWidth; f.style.transition="width "+ms+"ms linear"; f.style.width="100%";
-    b.classList.add("now"); const s=document.getElementById("brpSay"); if(s) s.innerHTML="…keep going into <b>"+E(P.B)+"</b>";
+    b.classList.add("now"); const s=document.getElementById("brpSay"); if(s) s.innerHTML="<b>"+E(P.B)+"</b>";
     setTimeout(()=>{ if(!B||B.done) return; b.classList.remove("now"); finish(); },ms+150); }
   function reset(){ B.done=false; B.step=-1; B.x=4; B.say=0; }
   function act(a,v,el){
