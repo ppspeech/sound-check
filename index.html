@@ -1,6 +1,9 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.qsrow.qs-nt>.num,.qsrow.qs-nt>.w,.qsrow.qs-nt>.segs,.qsrow.qs-nt>.cc,.qsrow.qs-nt .ipa{opacity:.38}.qsrow.qs-nt .segs{pointer-events:none}.nt-b[aria-pressed=true]{color:var(--accent)}
 .qsp .marks .nt.on{background:#6b6259;color:#fff;border-color:#6b6259}
 .qss{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}.qss-b{border-radius:10px;padding:10px 12px;font-size:.9rem;line-height:1.45}.qss-b.wide{grid-column:1/-1}.qss-b b{display:block;margin-bottom:4px}.qss-b ul{margin:0;padding-left:18px}.qss-b li{margin:2px 0}
+.brp-hold.sayit{background:#e8f4e6;color:#2f6b3a;border-color:#7fbf86;animation:sayp 1.6s ease-in-out infinite}.brp-hold.sayit b{font-size:1.15em}.brp-sayn{font-size:.8em;background:#fff;border-radius:999px;padding:1px 8px;margin-left:6px}@keyframes sayp{50%{transform:scale(1.03)}}
+#brpRes.nudge{animation:resn .5s ease}@keyframes resn{40%{transform:scale(1.12) rotate(-2deg)}}
+.ch-card{position:relative}.ch-card.now{box-shadow:0 0 0 4px #ffb020}.ch-bar{position:absolute;left:12px;right:12px;bottom:10px;height:8px;border-radius:999px;background:#eee3cf;overflow:hidden}.ch-bar i{display:block;height:100%;width:0;background:#ff8a00;border-radius:inherit}
 </style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -5833,6 +5836,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   const cur=()=>B.list[B.i];
   const SPEEDS=[["slow","🐢","Slow",0.016],["mid","🐇","Normal",0.028],["glide","🕊️","Glide",0.06]];
   function spd(){ return SPEEDS.find(x=>x[0]===B.spd)||SPEEDS[1]; }
+  function chPath(){ return PREF.line==="straight"?"M18 55 L284 55":"M18 55 C 48 20, 78 20, 108 55 S 168 90, 198 55 S 258 20, 284 52"; }
   function trail(){ return {d:"M40 230 L740 230", h:spd()[1]}; }
   const canHiss=a=>/(s|z|f|v|m|n|l|r|h|sh|th|w|y|a|e|i|o|u)$/i.test(String(a||"").trim());
   function stageHTML(){ const {it}=cur(), P=parts(it), f=P.f;
@@ -5845,16 +5849,16 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       <p class="brp-tip">${B.done?"":"Push the carriage to hook them up! 🚂"}</p>`;
     if(B.mode==="hiss") return `<div class="brp-stage scn-chain" id="brpStage">
         <div class="ch-row">
-          <div class="ch-snake"><b class="ch-lab" id="brpHlab">${E(P.A)}</b>
-            <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true"><path d="M18 55 C 48 20, 78 20, 108 55 S 168 90, 198 55 S 258 20, 284 52" class="bg"/><path d="M18 55 C 48 20, 78 20, 108 55 S 168 90, 198 55 S 258 20, 284 52" class="fg" id="brpPath"/>
-            <g id="brpHead" transform="translate(18 55)"><circle r="11" fill="#5FAF5A"/><circle cx="3" cy="-4" r="2.6" fill="#fff"/><circle cx="3.6" cy="-4" r="1.3" fill="#222"/><path d="M10 2 l8 2 l-8 2" stroke="#E2645A" stroke-width="2" fill="none"/></g></svg></div>
+          <div class="ch-snake"><b class="ch-lab" id="brpHlab">${B.done&&(P.hold??canHiss(P.A))?E(P.A)+E(P.hl||String(P.A).slice(-1)).repeat(4):E(P.A)}</b>
+            <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true"><path d="${chPath()}" class="bg"/><path d="${chPath()}" class="fg" id="brpPath"/>
+            <g id="brpHead" transform="translate(18 55)" ${B.done?'style="display:none"':""}><circle r="11" fill="#5FAF5A"/><circle cx="3" cy="-4" r="2.6" fill="#fff"/><circle cx="3.6" cy="-4" r="1.3" fill="#222"/><path d="M10 2 l8 2 l-8 2" stroke="#E2645A" stroke-width="2" fill="none"/></g></svg></div>
           <span class="ch-op">+</span>
           <div class="ch-card" id="brpB">${P.pb?`<span class="ch-pic">${P.pb}</span>`:""}<b>${E(P.B)}</b></div>
           <span class="ch-op">=</span>
           <div class="ch-card res ${B.done?"pop":""}" id="brpRes">${P.pw?`<span class="ch-pic">${P.pw}</span>`:""}<b>${E(P.W)}</b></div>
         </div>
         <div class="brp-say" id="brpSay">${B.done?"":(P.hold??canHiss(P.A))?"Hold the button and slide along the snake… then say "+E(P.B)+"!":"Hold it… then let go into "+E(P.B)}</div></div>
-      <button class="brp-hold" id="brpHold" ${B.done?"disabled":""}>${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`;
+      ${B.done?`<button class="brp-hold sayit" data-brp="sayit">🗣️ Now say <b>${E(P.W)}</b> at normal speed${B.say?` <span class="brp-sayn">×${B.say}</span>`:""}</button>`:`<button class="brp-hold" id="brpHold">${(P.hold??canHiss(P.A))?`Hold me! ${spd()[1]} ${E(P.A)}${E(P.hl||String(P.A).slice(-1)).repeat(3)}…`:`Hold me! ${spd()[1]} ${E(P.A)}… then let go`}</button>`}`;
     return `<div class="brp-stage river" id="brpStage">
         <div class="brp-frog" id="brpFrog" style="left:${[4,22,48,74][B.step+1]}%">🐸</div>
         <div class="brp-bank">${P.pw?`<span class="brp-pic">${B.step>=2?P.pw:(P.pb||"🏁")}</span>`:"🏁"}</div>
@@ -5866,7 +5870,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       <div class="brp-top"><b>Bridge it</b><span class="brp-seg">${[["slide","Slide it in"],["hiss","Hold the sound"],["stones","Stepping stones"]].map(([v,l])=>`<button data-brp="mode" data-v="${v}" aria-pressed="${B.mode===v}">${l}</button>`).join("")}</span>
         <span style="flex:1"></span><button class="brp-x" data-brp="set" aria-pressed="${!!B.set}" aria-label="Settings">⚙︎ ${B.reps}×${B.mode==="hiss"?" "+spd()[1]:""}</button><span class="brp-goes">★ ${B.goes}</span><button class="brp-x" data-brp="close">Close</button></div>
       ${B.set?`<div class="brp-set"><span class="brp-reps"><span>Reps per word</span>${[1,3,5,10].map(n=>`<button data-brp="reps" data-v="${n}" aria-pressed="${B.reps===n}">${n}</button>`).join("")}</span>
-        <span class="brp-reps"><span>Hold speed</span>${SPEEDS.map(([k,e,l])=>`<button data-brp="spd" data-v="${k}" aria-pressed="${spd()[0]===k}">${e} ${l}</button>`).join("")}</span></div>`:""}
+        <span class="brp-reps"><span>Hold speed</span>${SPEEDS.map(([k,e,l])=>`<button data-brp="spd" data-v="${k}" aria-pressed="${spd()[0]===k}">${e} ${l}</button>`).join("")}</span><span class="brp-reps"><span>Line</span>${[["wavy","〰️ Wavy"],["straight","➖ Straight"]].map(([k,l])=>`<button data-brp="line" data-v="${k}" aria-pressed="${(PREF.line||"wavy")===k}">${l}</button>`).join("")}</span></div>`:""}
       <div class="brp-strip"><button class="brp-arw" data-brp="prev" ${B.i?"":"disabled"} aria-label="Previous word">‹</button><div class="brp-chips" id="brpChips">${B.list.map((x,i)=>{ const r=(B.res||{})[i]; const ok=r&&r.length?r.filter(v=>v===true).length:0;
           return `<button class="brp-chip ${i===B.i?"cur":""} ${r&&r.length>=B.reps?"done":""}" data-brp="go" data-v="${i}" aria-current="${i===B.i}"><span>${parts(x.it).pw||"🔤"}</span>${E(parts(x.it).W)}${r&&r.length?`<i>${ok}/${r.length}</i>`:""}</button>`; }).join("")}</div><button class="brp-arw" data-brp="next" ${B.i<B.list.length-1?"":"disabled"} aria-label="Next word">›</button></div>
       ${bridgeHTML()}
@@ -5882,13 +5886,14 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     const pl=Array.from({length:n},(_,k)=>{ const i=s0+k, r=(B.res||{})[i]||[], full=r.length>=B.reps; const ok=r.filter(v=>v===true).length;
       const cl=full?(ok*2>=r.length?"on":"nr"):i===B.i?"cur":""; return `<i class="${cl}"></i>`; }).join("");
     return `<div class="brp-bridge ${B.fin?"fin":""}" aria-label="${pct}% of the bridge built"><div class="bb-cl l">🌳</div><div class="bb-cl r">🏁</div><div class="bb-water"></div><div class="bb-planks">${pl}</div>
-      <div class="bb-walker" style="left:calc(56px + (100% - 112px) * ${B.fin?1:pct/100})">${B.fin?"🙌":"🧒"}</div></div>`; }
+      <div class="bb-walker" style="left:calc(56px + (100% - 112px) * ${B.fin?1:pct/100})">${B.fin?"🙌":"🐨"}</div></div>`; }
   function progPct(){ const s0=Math.min(B.s0||0,B.i), tot=(B.list.length-s0)*B.reps; return B.fin?100:Math.min(100,Math.round(((B.i-s0)*B.reps+B.r)/tot*100)); }
   function finish(){ if(B.done) return; B.done=true; const st=document.getElementById("brpStage"); const res=document.getElementById("brpRes");
     (B.mode==="hiss"?[]:["brpA","brpB","brpTrail","brpHead","brpHlab"]).forEach(id=>{ const e=document.getElementById(id); if(e) e.classList.add("gone"); });
     if(res){ res.hidden=false; res.classList.add("pop"); } const s=document.getElementById("brpSay"); if(s) s.textContent="";
     if(st) boom(st, st.clientWidth*.5, st.clientHeight*.4);
-    const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); const hb=document.getElementById("brpHold"); if(hb) hb.disabled=true; const sy=document.getElementById("brpSay"); if(sy) sy.textContent=""; }
+    const f=document.querySelector("#brp .brp-foot"); if(f) f.classList.add("show"); const hb=document.getElementById("brpHold"); if(hb) hb.disabled=true; const sy=document.getElementById("brpSay"); if(sy) sy.textContent="";
+    if(B.mode==="hiss"){ B.say=0; setTimeout(()=>{ if(B&&B.done){ draw(); } },500); } }
   function setX(x){ const P=parts(cur().it); B.x=Math.max(2,Math.min(56,x)); const a=document.getElementById("brpA"); if(a) a.style.left=B.x+"%"; const g=56-B.x;
     const s=document.getElementById("brpSay"); if(s && !B.done) s.innerHTML = g>28?`${E(P.A)} + ${E(P.B)}`:g>5?`${E(P.A)}${"‑".repeat(Math.max(1,Math.round(g/7)))}${E(P.B)}`:`<b>${E(P.W)}</b>`;
     if(g<=5) finish(); }
@@ -5914,10 +5919,15 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
         const b=document.getElementById("brpB"); if(b) b.classList.remove("dim");
         zipEnd(); };
       const zipEnd=()=>{ const b=document.getElementById("brpB"); if(b) b.classList.remove("dim"); const w0=w, t0=performance.now(), D=320;
-        const go=now=>{ const k=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k,3); w=w0+(100-w0)*e; paint(); if(k<1) requestAnimationFrame(go); else { if(b) b.classList.add("catch"); head.classList.add("gone"); setTimeout(finish,260); } }; requestAnimationFrame(go); };
+        const go=now=>{ const k=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k,3); w=w0+(100-w0)*e; paint(); if(k<1) requestAnimationFrame(go); else { if(b) b.classList.add("catch"); head.classList.add("gone"); if(B.mode==="hiss"&&b){ nailBar(b); } else setTimeout(finish,260); } }; requestAnimationFrame(go); };
       h.addEventListener("contextmenu",e=>e.preventDefault()); h.addEventListener("selectstart",e=>e.preventDefault()); h.addEventListener("touchstart",e=>e.preventDefault(),{passive:false}); h.addEventListener("pointerdown",start); h.addEventListener("pointerup",end); h.addEventListener("pointerleave",end); h.addEventListener("pointercancel",end); }
   }
-  function reset(){ B.done=false; B.step=-1; B.x=4; }
+  function nailBar(b){ const ms={slow:2400,mid:1600,glide:1000}[spd()[0]]||1600; const P=parts(cur().it);
+    let bar=b.querySelector(".ch-bar"); if(!bar){ bar=document.createElement("i"); bar.className="ch-bar"; bar.innerHTML="<i></i>"; b.appendChild(bar); }
+    const f=bar.firstChild; f.style.transition="none"; f.style.width="0%"; void f.offsetWidth; f.style.transition="width "+ms+"ms linear"; f.style.width="100%";
+    b.classList.add("now"); const s=document.getElementById("brpSay"); if(s) s.innerHTML="…keep going into <b>"+E(P.B)+"</b>";
+    setTimeout(()=>{ if(!B||B.done) return; b.classList.remove("now"); finish(); },ms+150); }
+  function reset(){ B.done=false; B.step=-1; B.x=4; B.say=0; }
   function act(a,v,el){
     if(a==="close"){ close(); return; }
     if(a==="mode"){ B.mode=v; lastMode=v; if(B.chain){ PREF.chainMode=v; savePref(); } reset(); draw(); return; }
@@ -5929,6 +5939,8 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     if(a==="spd"){ B.spd=v; PREF.spd=v; savePref(); draw(); return; }
     if(a==="restart"){ B.res={}; B.i=0; B.s0=0; B.m=[]; B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
     if(a==="again"){ reset(); draw(); return; }
+    if(a==="sayit"){ B.say=(B.say||0)+1; draw(); const r=document.getElementById("brpRes"); if(r){ r.classList.remove("nudge"); void r.offsetWidth; r.classList.add("nudge"); } return; }
+    if(a==="line"){ PREF.line=v; savePref(); draw(); return; }
     if(a==="hear"){ say(parts(cur().it).W); return; }
     if(a==="said"||a==="nq"||a==="near"){ const ok=a==="said", {it,bk}=cur(); try{ const f=bForms(it); let stp=0; try{ const c=window.cur&&window.cur(); stp=(c&&c.bridge&&c.bridge[bk])||0; }catch(e){} recTrial(ok, f[stp], a==="near"); }catch(e){} B.goes++; const rv=ok?true:a==="near"?"near":false; (B.m ||= []).push(rv); ((B.res ||= {})[B.i] ||= []).push(rv); B.r++; B.pop=true; reset();
       const ms={10:"10 tries! 🔥",25:"25 tries! 🚀",50:"50 tries! 🌟",75:"75! Unstoppable 💪",100:"100 tries! 🏆"};
