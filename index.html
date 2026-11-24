@@ -4134,7 +4134,8 @@ Object.entries(GS).forEach(([k,o])=>{if(['zh','cj','cm'].includes(k))return;cons
   (o.sh||[]).forEach((x,i)=>ELIC.push({id:'gs_'+k+'_s'+i,cat:'Get the sound',label:'Shape: '+x.t,keys}));
   ELIC.push({id:'gs_'+k+'_br',cat:'Get the sound',label:'Bridge phrases (facilitating context)',keys});
 });
-function gsKeys(g){const ks=g.approach==='trad'?[g.target]:goalKeys(g);return [...new Set(ks.filter(k=>GS[k]))]}
+const GSMP={cr_s:['cs'],cr_lr:['cl','cr']};
+function gsKeys(g){const ks=g.approach==='trad'?[g.target]:g.approach==='mp'&&GSMP[g.set]?GSMP[g.set]:goalKeys(g);return [...new Set(ks.filter(k=>GS[k]))]}
 let GSOPEN=true;try{GSOPEN=localStorage.getItem('ssp-gs')!=='0'}catch(e){}
 function gsPanel(c,g,s){
   const ks=gsKeys(g);if(!ks.length)return '';
@@ -5940,7 +5941,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   }
   function close(){ const o=document.getElementById("brp"); if(o) o.remove(); B=null; document.documentElement.style.overflow=""; try{ render(); }catch(e){} }
   window.brOpen=function(k,bk){ const o0=GS[k]; if(!o0) return; const gf=(S.ui&&S.ui.gsGrp)||"";
-    const list=(o0.br||[]).filter(it=>(!gf || ((it.F||it.R||it.S||it.C||it.L)?it.g:it[5])===gf)).map(it=>({it,bk:bKey(k,it)}));
+    const list=(o0.br||[]).filter(it=>brVis(it,o0.br)).map(it=>({it,bk:bKey(k,it)}));
     if(!list.length){ try{ toast("No bridge words for this sound yet."); }catch(e){} return; }
     const i=Math.max(0,list.findIndex(x=>x.bk===bk)), chain=!!list[i].it.C;
     B={list,i,mode:chain?(PREF.chainMode||"hiss"):lastMode,chain,goes:0,reps:PREF.reps||3,spd:PREF.spd||"mid",res:{},s0:i,r:0,fin:false,cheer:"",k}; reset();
