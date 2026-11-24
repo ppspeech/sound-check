@@ -4,6 +4,7 @@
 .brp-hold.sayit{background:#e8f4e6;color:#2f6b3a;border-color:#7fbf86;}.brp-hold.sayit b{font-size:1.15em}.brp-sayn{font-size:.8em;background:#fff;border-radius:999px;padding:1px 8px;margin-left:6px}@keyframes sayp{50%{transform:scale(1.03)}}
 #brpRes.nudge{animation:resn .5s ease}@keyframes resn{40%{transform:scale(1.12) rotate(-2deg)}}
 .ch-card{position:relative}.ch-card.now{box-shadow:0 0 0 4px #ffb020}.ch-bar{position:absolute;left:12px;right:12px;bottom:10px;height:8px;border-radius:999px;background:#eee3cf;overflow:hidden}.ch-bar i{display:block;height:100%;width:0;background:#ff8a00;border-radius:inherit}
+.brp-main .brp-foot{position:static;border-top:0;background:none;justify-content:center;padding:4px 14px 10px;display:none}.brp-main .brp-foot.show{display:flex}
 </style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -5874,9 +5875,9 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
       <div class="brp-strip"><button class="brp-arw" data-brp="prev" ${B.i?"":"disabled"} aria-label="Previous word">‹</button><div class="brp-chips" id="brpChips">${B.list.map((x,i)=>{ const r=(B.res||{})[i]; const ok=r&&r.length?r.filter(v=>v===true).length:0;
           return `<button class="brp-chip ${i===B.i?"cur":""} ${r&&r.length>=B.reps?"done":""}" data-brp="go" data-v="${i}" aria-current="${i===B.i}"><span>${parts(x.it).pw||"🔤"}</span>${E(parts(x.it).W)}${r&&r.length?`<i>${ok}/${r.length}</i>`:""}</button>`; }).join("")}</div><button class="brp-arw" data-brp="next" ${B.i<B.list.length-1?"":"disabled"} aria-label="Next word">›</button></div>
       ${bridgeHTML()}
-      <div class="brp-main">${stageHTML()}${B.fin||B.reps<2?"":`<div class="brp-count"><span class="brp-dots">${dotsHTML()}</span><span>${B.r} of ${B.reps}</span></div>`}${P.alts?`<div class="brp-alts"><span>VC word:</span>${P.alts.map(a=>`<button data-brp="alt" data-v="${E(a)}" aria-pressed="${a===P.A}">${E(a)}</button>`).join("")}<input class="brp-own" id="brpOwn" placeholder="+ your own" aria-label="Your own VC word"></div>`:""}</div>
-      <div class="brp-foot ${B.done&&!B.fin?"show":""}"><button data-brp="hear" class="brp-ic" aria-label="Hear ${E(P.W)}">🔊</button><button data-brp="again" class="brp-ic" aria-label="Again">↻</button><span style="flex:1"></span>
-        <button data-brp="nq" class="brp-ans no"><i>·</i>Not quite</button><button data-brp="near" class="brp-ans nr"><i>≈</i>Nearly</button><button data-brp="said" class="brp-ans ok"><i>★</i>Said it!</button></div>
+      <div class="brp-main">${stageHTML()}<div class="brp-foot ${B.done&&!B.fin?"show":""}"><button data-brp="hear" class="brp-ic" aria-label="Hear ${E(P.W)}">🔊</button><button data-brp="again" class="brp-ic" aria-label="Again">↻</button><span style="flex:1"></span>
+        <button data-brp="nq" class="brp-ans no"><i>·</i>Not quite</button><button data-brp="near" class="brp-ans nr"><i>≈</i>Nearly</button><button data-brp="said" class="brp-ans ok"><i>★</i>Said it!</button></div>${B.fin||B.reps<2?"":`<div class="brp-count"><span class="brp-dots">${dotsHTML()}</span><span>${B.r} of ${B.reps}</span></div>`}${P.alts?`<div class="brp-alts"><span>VC word:</span>${P.alts.map(a=>`<button data-brp="alt" data-v="${E(a)}" aria-pressed="${a===P.A}">${E(a)}</button>`).join("")}<input class="brp-own" id="brpOwn" placeholder="+ your own" aria-label="Your own VC word"></div>`:""}</div>
+      
     </div>`;
     B.pop=false; if(B.cheer){ const st=document.getElementById("brpStage"); if(st){ const c=document.createElement("div"); c.className="brp-cheer"; c.textContent=B.cheer; st.appendChild(c); setTimeout(()=>c.remove(),1800); } B.cheer=""; }
     const cc=document.querySelector("#brpChips .cur"); if(cc) cc.scrollIntoView({block:"nearest",inline:"center"});
