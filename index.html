@@ -5,6 +5,7 @@
 #brpRes.nudge{animation:resn .5s ease}@keyframes resn{40%{transform:scale(1.12) rotate(-2deg)}}
 .ch-card{position:relative}.ch-card.now{box-shadow:0 0 0 4px #ffb020}.ch-bar{position:absolute;left:12px;right:12px;bottom:10px;height:8px;border-radius:999px;background:#eee3cf;overflow:hidden}.ch-bar i{display:block;height:100%;width:0;background:#ff8a00;border-radius:inherit}
 .brp-main .brp-foot{position:static;border-top:0;background:none;justify-content:center;padding:4px 14px 10px;display:flex;visibility:hidden}.brp-main .brp-foot.show{visibility:visible}.brp-slot{min-height:86px;display:flex;align-items:center;justify-content:center;width:100%}.brp-slot .brp-foot{padding:0}
+.brp-rec.on{background:#e2645a;color:#fff;border-color:#e2645a}
 </style><link rel="icon" type="image/svg+xml" href="icons/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -5869,7 +5870,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
   function draw(){ const o=document.getElementById("brp"); if(!o||!B) return; const {it}=cur(), P=parts(it);
     o.innerHTML=`<div class="brp-box">
       <div class="brp-top"><b>Bridge it</b>
-        <span style="flex:1"></span><button class="brp-x" data-brp="set" aria-pressed="${!!B.set}" aria-label="Settings">⚙︎ ${B.reps}×${B.mode==="hiss"?" "+spd()[1]:""}</button><span class="brp-goes">★ ${B.goes}</span><button class="brp-x" data-brp="close">Close</button></div>
+        <span style="flex:1"></span><button class="brp-x brp-rec ${REC.on?"on":""}" data-brp="rec" aria-label="${REC.on?"Stop recording":"Record"}">${REC.on?"⏹ Stop":"🎙️ Record"}</button>${REC.url[B.i]&&!REC.on?`<button class="brp-x" data-brp="play" aria-label="Play back">▶️ Listen</button>`:""}<button class="brp-x" data-brp="set" aria-pressed="${!!B.set}" aria-label="Settings">⚙︎ ${B.reps}×${B.mode==="hiss"?" "+spd()[1]:""}</button><span class="brp-goes">★ ${B.goes}</span><button class="brp-x" data-brp="close">Close</button></div>
       ${B.set?`<div class="brp-set"><span class="brp-reps"><span>Game</span>${[["slide","Slide it in"],["hiss","Hold the sound"],["stones","Stepping stones"]].map(([v,l])=>`<button data-brp="mode" data-v="${v}" aria-pressed="${B.mode===v}">${l}</button>`).join("")}</span><span class="brp-reps"><span>Reps per word</span>${[1,3,5,10].map(n=>`<button data-brp="reps" data-v="${n}" aria-pressed="${B.reps===n}">${n}</button>`).join("")}</span>
         <span class="brp-reps"><span>Hold speed</span>${SPEEDS.map(([k,e,l])=>`<button data-brp="spd" data-v="${k}" aria-pressed="${spd()[0]===k}">${e} ${l}</button>`).join("")}</span><span class="brp-reps"><span>Line</span>${[["wavy","〰️ Wavy"],["straight","➖ Straight"]].map(([k,l])=>`<button data-brp="line" data-v="${k}" aria-pressed="${(PREF.line||"wavy")===k}">${l}</button>`).join("")}</span></div>`:""}
       <div class="brp-strip"><button class="brp-arw" data-brp="prev" ${B.i?"":"disabled"} aria-label="Previous word">‹</button><div class="brp-chips" id="brpChips">${B.list.map((x,i)=>{ const r=(B.res||{})[i]; const ok=r&&r.length?r.filter(v=>v===true).length:0;
@@ -5929,6 +5930,12 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     setTimeout(()=>{ if(!B||B.done) return; b.classList.remove("now"); finish(); },ms+150); }
   function footHTML(P){ return `<div class="brp-foot ${B.done&&!B.fin?"show":""}"><button data-brp="hear" class="brp-ic" aria-label="Hear ${E(P.W)}">🔊</button><button data-brp="again" class="brp-ic" aria-label="Again">↻</button><span style="flex:1"></span>
         <button data-brp="nq" class="brp-ans no"><i>·</i>Not quite</button><button data-brp="near" class="brp-ans nr"><i>≈</i>Nearly</button><button data-brp="said" class="brp-ans ok"><i>★</i>Said it!</button></div>`; }
+  const REC={on:false,url:{},mr:null,stream:null};
+  async function recToggle(){ if(REC.on){ try{ REC.mr.stop(); }catch(e){} return; }
+    try{ REC.stream=await navigator.mediaDevices.getUserMedia({audio:true}); }catch(e){ try{ toast("Microphone isn’t available here. Allow the mic, or use the GitHub version."); }catch(_){} return; }
+    const chunks=[], i=B.i; REC.mr=new MediaRecorder(REC.stream); REC.mr.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+    REC.mr.onstop=()=>{ REC.on=false; try{ REC.stream.getTracks().forEach(t=>t.stop()); }catch(e){} if(REC.url[i]) URL.revokeObjectURL(REC.url[i]); REC.url[i]=URL.createObjectURL(new Blob(chunks,{type:REC.mr.mimeType||"audio/webm"})); if(B) draw(); };
+    REC.mr.start(); REC.on=true; draw(); }
   function reset(){ B.done=false; B.step=-1; B.x=4; B.say=0; B.popped=false; }
   function act(a,v,el){
     if(a==="close"){ close(); return; }
@@ -5941,6 +5948,8 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     if(a==="spd"){ B.spd=v; PREF.spd=v; savePref(); draw(); return; }
     if(a==="restart"){ B.res={}; B.i=0; B.s0=0; B.m=[]; B.r=0; B.m=[]; B.fin=false; reset(); draw(); return; }
     if(a==="again"){ reset(); draw(); return; }
+    if(a==="rec"){ recToggle(); return; }
+    if(a==="play"){ const u=REC.url[B.i]; if(u){ try{ new Audio(u).play(); }catch(e){} } return; }
     if(a==="sayit"){ B.say=(B.say||0)+1; draw(); const r=document.getElementById("brpRes"); if(r){ r.classList.remove("nudge"); void r.offsetWidth; r.classList.add("nudge"); } return; }
     if(a==="line"){ PREF.line=v; savePref(); draw(); return; }
     if(a==="hear"){ say(parts(cur().it).W); return; }
@@ -5953,7 +5962,7 @@ const WS_PIC={up:"⬆️",eat:"🍽️",egg:"🥚",arm:"💪",ice:"🧊",owl:"�
     if(a==="auto"){ const i=+v; const ap=document.getElementById("brpA"); if(ap){ ap.style.transition="left .5s"; setTimeout(()=>{ if(ap) ap.style.transition=""; },520); } setX(i===0?4:i===1?44:57); return; }
     if(a==="stone"){ const i=+v; if(i!==B.step+1) return; B.step=i; draw(); if(i===2) setTimeout(()=>{ B.done=false; finish(); },420); return; }
   }
-  function close(){ const o=document.getElementById("brp"); if(o) o.remove(); B=null; document.documentElement.style.overflow=""; try{ render(); }catch(e){} }
+  function close(){ try{ if(REC.on) REC.mr.stop(); Object.values(REC.url).forEach(u=>URL.revokeObjectURL(u)); REC.url={}; }catch(e){} const o=document.getElementById("brp"); if(o) o.remove(); B=null; document.documentElement.style.overflow=""; try{ render(); }catch(e){} }
   window.brOpen=function(k,bk){ const o0=GS[k]; if(!o0) return; const gf=(S.ui&&S.ui.gsGrp)||"";
     const list=(o0.br||[]).filter(it=>brVis(it,o0.br)).map(it=>({it,bk:bKey(k,it)}));
     if(!list.length){ try{ toast("No bridge words for this sound yet."); }catch(e){} return; }
